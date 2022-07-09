@@ -1,9 +1,7 @@
 use std::time::Duration;
-use log::{info, warn};
-use rdkafka::client::ClientContext;
-use rdkafka::config::{ClientConfig, RDKafkaLogLevel};
+use log::{info};
+use rdkafka::config::{ClientConfig};
 use rdkafka::producer::{FutureProducer, FutureRecord};
-use rdkafka::TopicPartitionList;
 
 mod logging;
 

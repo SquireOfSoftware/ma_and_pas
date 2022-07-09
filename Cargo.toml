@@ -8,7 +8,7 @@ name = "truckers"
 path = "src/producers.rs"
 
 [[bin]]
-name = "consumers"
+name = "ma_and_pa"
 path = "src/consumers.rs"
 
 [dependencies]
