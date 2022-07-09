@@ -3,6 +3,19 @@ name = "ma_and_pas"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "truckers"
+path = "src/producers.rs"
+
+[[bin]]
+name = "consumers"
+path = "src/consumers.rs"
 
 [dependencies]
+# seems like this project stalled?
+#kafka = "0.9"
+rdkafka = { version = "0.25", features = ["cmake-build"] }
+tokio = { version = "1.19.2", features = ["full"] }
+log = "0.4.8"
+env_logger = "0.9.0"
+chrono = "0.4.0"
