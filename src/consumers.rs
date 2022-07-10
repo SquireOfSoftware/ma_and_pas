@@ -29,7 +29,7 @@ impl ConsumerContext for CustomContext {
 
 type LoggingConsumer = StreamConsumer<CustomContext>;
 
-async fn consume(server: &str, queue: &str) {
+async fn consume(server: &str, topic: &str) {
     let context = CustomContext;
     let consumer: LoggingConsumer = ClientConfig::new()
         .set("bootstrap.servers", server)
@@ -40,7 +40,7 @@ async fn consume(server: &str, queue: &str) {
         .create_with_context(context)
         .expect("Consumer creation failed");
 
-    let topics: [&str; 1] = [&queue];
+    let topics: [&str; 1] = [&topic];
 
     consumer.subscribe(&topics)
         .expect("Can't subscribe to topics");
@@ -70,6 +70,6 @@ async fn main() {
     logging::setup_logger();
     info!("Hello world");
     let kafka = "localhost:9092";
-    let queue = "incoming_orders";
-    consume(kafka, queue).await;
+    let topic = "incoming_orders";
+    consume(kafka, topic).await;
 }

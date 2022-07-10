@@ -7,8 +7,8 @@ The architecture will take this form:
 ![](architecture.png)
 
 Where we will have:
-- a trucker app that publishes and receives the order
-- a shop app that will receive and deliver the order
+- a trucker app that publishes and receives the order - maybe I can make this an actix-web app? with "update" callbacks and "delivery" callbacks
+- a "ma and pa" shop app that will receive and deliver the order
 
 The architecture may grow from here, but the important thing here is the scale at which this will operate on.
 
