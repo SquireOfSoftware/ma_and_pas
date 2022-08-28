@@ -7,8 +7,53 @@ interface MenuItem {
     name: String!
 }
 
+enum Sizes {
+    Small
+    Medium
+    Large
+}
+
+enum Drinks {
+    Coke
+    Sprite
+}
+
+type SizeRange {
+    from: Int
+    to: Int
+}
+
 type Burger implements MenuItem {
     id: ID!
     name: String!
 }
 
+type Fries implements MenuItem {
+    id: ID!
+    name: String!
+    size: Sizes!
+    fryRange: SizeRange!
+}
+
+type Drink implements MenuItem {
+    id: ID!
+    name: String!
+    type: Drinks!
+    size: Sizes!
+}
+
+interface Meal implements MenuItem {
+    id: ID!
+    name: String!
+    burger: Burger!
+    fries: Fries!
+    drink: Drink!
+}
+
+type SmallMacMeal implements Meal & MenuItem {
+    id: ID!
+    name: String!
+    burger: Burger!
+    fries: Fries!
+    drink: Drink!
+}
