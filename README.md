@@ -20,3 +20,44 @@ To test the consumption and sourcing of events in RedPanda and what happens if y
 What I want to have:
 - a basic Nuxt JS framework to demonstrate to myself how Vue JS works
 - a basic test pipeline that runs tests per commit and generates a docker image when merged to main
+
+## Orders
+
+Looking at the menu:
+```
+query {
+    menu {
+        menuItem {
+            id
+            name
+        }
+    }
+}
+```
+
+The menu items can be a meal or a simple drink.
+
+You should know the name of the item that you are ordering.
+
+Customisations can come later.
+
+Creating the order:
+```
+mutation {
+    createOrder(input: OrderCreationInput!) {
+        orderNumber
+    }
+}
+
+input OrderCreationInput {
+    orders: [Int!]!
+}
+```
+
+You can create a list of orders, hence the array.
+
+And what you get back is an order number to track how your
+order is going.
+
+It should be noted that the client manages their "cart", the
+backend only handles successfully agreed upon orders.

@@ -3,6 +3,9 @@ name = "ma_and_pas"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+path = "src/lib.rs"
+
 [[bin]]
 name = "truckers"
 path = "src/producers.rs"
@@ -11,11 +14,16 @@ path = "src/producers.rs"
 name = "ma_and_pa"
 path = "src/consumers.rs"
 
+[[bin]]
+name = "orders"
+path = "src/orders.rs"
+
 [dependencies]
-# seems like this project stalled?
-#kafka = "0.9"
-rdkafka = { version = "0.25", features = ["cmake-build"] }
+rdkafka = { version = "0.28.0" }
 tokio = { version = "1.19.2", features = ["full"] }
 log = "0.4.8"
 env_logger = "0.9.0"
 chrono = "0.4.0"
+actix-web = "4"
+async-graphql = "4"
+async-graphql-actix-web = "4"
