@@ -1,0 +1,14 @@
+type Query {
+    menu: [MenuItem!]
+}
+
+interface MenuItem {
+    id: ID!
+    name: String!
+}
+
+type Burger implements MenuItem {
+    id: ID!
+    name: String!
+}
+
