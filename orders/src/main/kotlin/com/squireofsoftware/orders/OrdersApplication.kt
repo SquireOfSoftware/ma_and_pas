@@ -7,19 +7,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
-@Configuration
 @SpringBootApplication
-class OrdersApplication {
-//	@Bean
-//	fun corsConfigurer(): WebMvcConfigurer {
-//		return WebMvcConfigurer {
-//			@Override
-//			fun addCorsMapping(registry: CorsRegistry) {
-//				registry.addMapping("*/*").allowedOrigins("*")
-//			}
-//		}
-//	}
-}
+class OrdersApplication
 
 fun main(args: Array<String>) {
 	runApplication<OrdersApplication>(*args)
