@@ -1,3 +1,3 @@
 package com.squireofsoftware.orders.menu
 
-interface Meal: MenuItem
+open class Meal: MenuItem(type = ItemType.meal)

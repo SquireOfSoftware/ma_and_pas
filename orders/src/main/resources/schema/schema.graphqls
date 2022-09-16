@@ -38,7 +38,7 @@ type Fries implements MenuItem {
 type Drink implements MenuItem {
     id: ID!
     name: String!
-    type: Drinks!
+    flavour: Drinks!
     size: Sizes!
 }
 

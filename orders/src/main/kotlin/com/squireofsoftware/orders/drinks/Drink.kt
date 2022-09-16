@@ -1,5 +1,6 @@
 package com.squireofsoftware.orders.drinks
 
+import com.squireofsoftware.orders.menu.ItemType
 import com.squireofsoftware.orders.menu.MenuItem
 import com.squireofsoftware.orders.sizes.Sizes
 import java.util.*
@@ -7,7 +8,7 @@ import java.util.*
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-class Drink(val size: Sizes, val type: Drinks): MenuItem {
+class Drink(val size: Sizes, val flavour: Drinks): MenuItem(type = ItemType.drink) {
     val id = UUID.randomUUID()
     val name = type.name
     val capacity = when (size) {

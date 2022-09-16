@@ -14,7 +14,7 @@ class MenuDataFetcher {
     private val burger = Burger("The Small Mac")
     private val smallMacMeal = SmallMacMeal()
     private val smallFries = Fries(size = Sizes.Small)
-    private val smallCoke = Drink(size = Sizes.Small, type = Drinks.Coke)
+    private val smallCoke = Drink(size = Sizes.Small, flavour = Drinks.Coke)
 
     @DgsQuery
     fun menu(): List<MenuItem> {

@@ -8,10 +8,10 @@ import com.squireofsoftware.orders.menu.Meal
 import com.squireofsoftware.orders.sizes.Sizes
 import java.util.*
 
-class SmallMacMeal: Meal {
+class SmallMacMeal: Meal() {
     val id = UUID.randomUUID()
     val name = "The Smol Mac Meal"
     val burger = Burger(name = "The Small Mac")
     val fries = Fries(size = Sizes.Medium)
-    val drink = Drink(size = Sizes.Medium, type = Drinks.Coke)
+    val drink = Drink(size = Sizes.Medium, flavour = Drinks.Coke)
 }
