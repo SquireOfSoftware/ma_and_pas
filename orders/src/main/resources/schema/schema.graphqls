@@ -28,6 +28,17 @@ type Burger implements MenuItem {
     name: String!
 }
 
+type Fish implements MenuItem {
+    id: ID!
+    name: String!
+    prepType: FishType!
+}
+
+enum FishType {
+    Grilled
+    Battered
+}
+
 type Fries implements MenuItem {
     id: ID!
     name: String!
@@ -45,9 +56,6 @@ type Drink implements MenuItem {
 interface Meal implements MenuItem {
     id: ID!
     name: String!
-    burger: Burger!
-    fries: Fries!
-    drink: Drink!
 }
 
 type SmallMacMeal implements Meal & MenuItem {
@@ -56,4 +64,11 @@ type SmallMacMeal implements Meal & MenuItem {
     burger: Burger!
     fries: Fries!
     drink: Drink!
+}
+
+type FishAndChips implements Meal & MenuItem {
+    id: ID!
+    name: String!
+    fish: Fish!
+    fries: Fries!
 }

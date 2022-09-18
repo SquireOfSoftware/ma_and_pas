@@ -4,11 +4,8 @@ import com.squireofsoftware.orders.menu.ItemType
 import com.squireofsoftware.orders.menu.MenuItem
 import com.squireofsoftware.orders.sizes.SizeRange
 import com.squireofsoftware.orders.sizes.Sizes
-import java.util.*
 
-class Fries(val size: Sizes) : MenuItem(type = ItemType.fries) {
-    val id = UUID.randomUUID()
-    val name = "Fries"
+class Fries(val size: Sizes) : MenuItem(type = ItemType.fries, name = "Fries") {
     val fryRange = when (size) {
         Sizes.Small -> SizeRange(15, 25)
         Sizes.Medium -> SizeRange(30, 40)

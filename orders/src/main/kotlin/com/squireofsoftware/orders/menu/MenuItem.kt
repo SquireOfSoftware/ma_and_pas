@@ -1,3 +1,7 @@
 package com.squireofsoftware.orders.menu
 
-open class MenuItem(val type: ItemType)
+import java.util.*
+
+open class MenuItem(val type: ItemType, val name: String) {
+    val id = UUID.randomUUID()
+}

@@ -4,5 +4,6 @@ enum class ItemType {
     fries,
     burger,
     drink,
-    meal
+    meal,
+    fish
 }
