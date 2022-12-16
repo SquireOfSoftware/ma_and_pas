@@ -61,3 +61,7 @@ order is going.
 
 It should be noted that the client manages their "cart", the
 backend only handles successfully agreed upon orders.
+
+Bruh why is it so hard to find good async-graphql tutorials?
+Gonna try this one out
+https://levelup.gitconnected.com/working-with-graphql-in-rust-dcbff7e768f1
