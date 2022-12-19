@@ -1,21 +1,10 @@
-use std::sync::{Arc, Mutex};
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, guard};
+use actix_web::{web, App, HttpResponse, HttpServer, guard};
 use actix_web::error::HttpError;
 use actix_web::web::Data;
-use async_graphql::{http::{playground_source, GraphQLPlaygroundConfig}, Schema, Object, EmptySubscription, EmptyMutation, FieldResult, Context};
+use async_graphql::{http::{playground_source, GraphQLPlaygroundConfig}, Schema, Object, EmptySubscription, FieldResult, SimpleObject, Enum};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 
-pub type ShopSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
-
-pub struct QueryRoot;
-
-// this is the implementation of the query
-#[Object(extends)]
-impl QueryRoot {
-    async fn hello(&self) -> FieldResult<&str> {
-        Ok("hello")
-    }
-}
+pub type ShopSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 
 pub struct MutationRoot;
 
@@ -26,16 +15,93 @@ impl MutationRoot {
     }
 }
 
+#[derive(Enum, Eq, PartialEq, Copy, Clone)]
+pub enum Size {
+    Small,
+    Medium,
+    Large
+}
+
+#[derive(SimpleObject, Clone, Eq, PartialEq)]
+pub struct Burger {
+    id: String,
+    burger_type: String,
+}
+
+#[derive(SimpleObject, Clone)]
+pub struct Fries {
+    id: String,
+    size: Size
+}
+
+#[derive(Enum, PartialEq, Eq, Clone, Copy)]
+pub enum DrinkType {
+    Water,
+    Coke,
+    Sprite,
+    OrangeJuice
+}
+
+#[derive(SimpleObject, Clone)]
+pub struct Drink {
+    id: String,
+    size: Size,
+    drink_type: DrinkType
+}
+
+#[derive(SimpleObject, Clone)]
+pub struct Meal {
+    id: String,
+    name: String,
+    burger: Burger,
+    fries: Fries,
+    drink: Drink
+}
+
 // this is my schema?
+#[derive(SimpleObject, Clone)]
 pub struct Menu {
-    hello: &'static str
+    hello: String,
+    meals: Vec<Meal>
 }
 
 impl Menu {
     pub async fn new() -> Self {
         Self {
-            hello: "hello"
+            hello: "hello".to_string(),
+            meals: [
+                Meal {
+                    id: "123".to_string(),
+                    name: "Standard meal".to_string(),
+                    burger: Burger {
+                        id: "124".to_string(),
+                        burger_type: "Cheesy".to_string()
+                    },
+                    fries: Fries {
+                        id: "125".to_string(),
+                        size: Size::Large
+                    },
+                    drink: Drink {
+                        id: "126".to_string(),
+                        size: Size::Large,
+                        drink_type: DrinkType::Water
+                    },
+                }
+            ].to_vec()
         }
+    }
+}
+
+pub struct QueryRoot;
+
+// this is the implementation of the query
+#[Object]
+impl QueryRoot {
+    async fn hello(&self) -> FieldResult<&str> {
+        Ok("hello")
+    }
+    async fn menu(&self) -> FieldResult<Menu> {
+        Ok(Menu::new().await)
     }
 }
 
@@ -50,20 +116,9 @@ async fn index_playground() -> Result<HttpResponse, HttpError> {
         .body(source))
 }
 
-// #[get("/orders/{order_id}")]
-// async fn get_order(path: web::Path<u32>) -> impl Responder {
-//     let order_id = path.into_inner();
-//     HttpResponse::Ok().body(format!("hello {}", order_id))
-// }
-//
-// #[post("/orders")]
-// async fn create_order(req_body: String) -> impl Responder {
-//     HttpResponse::Ok().body(req_body)
-// }
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
         .data(Menu::new())
         .finish();
     // you must provision the data into the schema, it seems
