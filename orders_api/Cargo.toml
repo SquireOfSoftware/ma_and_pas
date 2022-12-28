@@ -1,0 +1,22 @@
+[package]
+name = "orders_api"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+rdkafka = { version = "0.29.0" }
+tokio = { version = "1.21.2", features = ["full"] }
+log = "0.4.8"
+env_logger = "0.10.0"
+chrono = "0.4.0"
+actix-web = "4"
+async-graphql = "5.0.3"
+async-graphql-actix-web = "5.0.3"
+serde = {version = "1.0.137", features = ["derive"] }
+tokio-postgres = "0.7.7"
+config = "0.13.3"
+deadpool-postgres = {version = "0.10.3", features = ["serde"]}
+tokio-pg-mapper = "0.2.0"
+tokio-pg-mapper-derive = "0.2.0"
+derive_more = "0.99.17"
+tracing = "0.1.37"

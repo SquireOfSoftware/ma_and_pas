@@ -1,0 +1,11 @@
+[package]
+name = "postgres_test"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.19.2", features = ["full"] }
+log = "0.4.8"
+env_logger = "0.10.0"
+serde = "1"
+tokio-postgres = "0.7.7"

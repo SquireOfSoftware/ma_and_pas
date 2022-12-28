@@ -16,10 +16,18 @@ path = "src/consumers.rs"
 
 [[bin]]
 name = "orders"
-path = "src/orders.rs"
+path = "orders_api/src/main.rs"
+
+[workspace]
+
+members = [
+    "surrealdb_test",
+    "postgres_test",
+    "orders_api"
+]
 
 [dependencies]
-rdkafka = { version = "0.28.0" }
+rdkafka = { version = "0.29.0" }
 tokio = { version = "1.19.2", features = ["full"] }
 log = "0.4.8"
 env_logger = "0.10.0"
