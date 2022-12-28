@@ -35,10 +35,8 @@ pub enum Size {
     Large,
 }
 
-#[derive(SimpleObject, Clone, Eq, PartialEq, serde::Serialize, PostgresMapper, Debug)]
-#[pg_mapper(table = "burgers")]
+#[derive(SimpleObject, Clone, Eq, PartialEq, serde::Serialize, Debug)]
 pub struct Burger {
-    #[serde(skip_serializing)]
     id: Option<String>,
     burger_type: String,
     cost: i32,
@@ -46,9 +44,6 @@ pub struct Burger {
 
 impl From<Row> for Burger {
     fn from(row: Row) -> Self {
-        let result: _ = row.get::<&str, i32>("id");
-        dbg!(result);
-
         Self {
             id: Some(row.get::<&str, i32>("id").to_string()),
             burger_type: row.get("burger_type"),
@@ -59,7 +54,6 @@ impl From<Row> for Burger {
 
 #[derive(SimpleObject, Clone)]
 pub struct Fries {
-    // #[serde(skip_serializing)]
     id: Option<String>,
     size: Size,
     cost: i32,
@@ -75,7 +69,6 @@ pub enum DrinkType {
 
 #[derive(SimpleObject, Clone)]
 pub struct Drink {
-    // #[serde(skip_serializing)]
     id: Option<String>,
     size: Size,
     drink_type: DrinkType,
@@ -84,7 +77,6 @@ pub struct Drink {
 
 #[derive(SimpleObject, Clone)]
 pub struct Meal {
-    // #[serde(skip_serializing)]
     id: Option<String>,
     name: String,
     burger: Burger,
@@ -154,10 +146,12 @@ impl QueryRoot {
             .get()
             .await
             .map_err(CustomError::PoolError)?;
-        dbg!(db);
-        let result = db.query("select * from burgers", &[]).await?;
-        let burgers: Vec<Burger> = result.into_iter().map(|row| Burger::from(row)).collect();
-        Ok(burgers.to_vec())
+
+        let result = db.query("select * from burgers", &[])
+            .await
+            .unwrap();
+
+        Ok(result.into_iter().map(|row| Burger::from(row)).collect::<Vec<Burger>>().to_vec())
     }
 }
 
@@ -212,8 +206,6 @@ async fn initialise_db(db_pool: web::Data<Pool>) -> Result<HttpResponse, CustomE
 
     dbg!(result);
 
-    println!("inserting dummy data in");
-
     let result = client
         .execute(
             "INSERT INTO burgers (burger_type, cost) VALUES ($1, $2)",
@@ -223,15 +215,7 @@ async fn initialise_db(db_pool: web::Data<Pool>) -> Result<HttpResponse, CustomE
 
     dbg!(result);
 
-    println!("returning hello world");
-
-    Ok(HttpResponse::Ok().json("hello"))
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct ExampleConfig {
-    pub server_address: String,
-    pub pg: deadpool_postgres::Config,
+    Ok(HttpResponse::Ok().json("dummy data has been initalised"))
 }
 
 #[actix_web::main]
