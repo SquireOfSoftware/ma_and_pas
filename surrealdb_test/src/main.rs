@@ -102,11 +102,11 @@
 //     Ok(())
 // }
 
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use surrealdb_rs::param::Root;
 use surrealdb_rs::protocol::Ws;
 use surrealdb_rs::{Result, Surreal};
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Name {
@@ -129,17 +129,19 @@ async fn main() -> Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
 
-    let client = Surreal::connect::<Ws>("localhost:8000").await
+    let client = Surreal::connect::<Ws>("localhost:8000")
+        .await
         .expect("should connect");
 
     println!("connection established");
 
     // for some strange reason the code just stops here, something to do with the client which
     // i havent figured out yet
-    client.signin(Root {
-        username: "root",
-        password: "root"
-    })
+    client
+        .signin(Root {
+            username: "root",
+            password: "root",
+        })
         .await?;
 
     println!("signed in");
@@ -155,9 +157,10 @@ async fn main() -> Result<()> {
                 first: "John".into(),
                 last: "Smith".into(),
             },
-            marketing: false
+            marketing: false,
         })
-        .await.expect("should create user");
+        .await
+        .expect("should create user");
 
     println!("created a user");
 

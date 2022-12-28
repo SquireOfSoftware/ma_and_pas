@@ -1,7 +1,7 @@
-use std::time::Duration;
-use log::{info};
-use rdkafka::config::{ClientConfig};
+use log::info;
+use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
+use std::time::Duration;
 
 mod logging;
 
@@ -18,13 +18,11 @@ async fn produce(server: &str, queue: &str) {
                 .send(
                     FutureRecord::to(queue)
                         .payload(&format!("Message Chezburger{}", i))
-                        .key(&format!("Key {}", i))
-                    // .headers(OwnedHeaders::new().insert(Header {
-                    //     key: "header_key",
-                    //     value: Some("header_value")
-                    // }))
-                    ,
-                    Duration::from_secs(0)
+                        .key(&format!("Key {}", i)), // .headers(OwnedHeaders::new().insert(Header {
+                                                     //     key: "header_key",
+                                                     //     value: Some("header_value")
+                                                     // }))
+                    Duration::from_secs(0),
                 )
                 .await;
             delivery_status

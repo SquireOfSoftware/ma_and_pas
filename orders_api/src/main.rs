@@ -1,16 +1,19 @@
-use actix_web::{get, web, App, HttpResponse, HttpServer, guard, ResponseError};
 use actix_web::error::HttpError;
 use actix_web::web::Data;
-use async_graphql::{http::{playground_source, GraphQLPlaygroundConfig}, Schema, Object, EmptySubscription, FieldResult, SimpleObject, Enum};
+use actix_web::{get, guard, web, App, HttpResponse, HttpServer, ResponseError};
+use async_graphql::{
+    http::{playground_source, GraphQLPlaygroundConfig},
+    Context, EmptySubscription, Enum, FieldResult, Object, Schema, SimpleObject,
+};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use derive_more::{Display, From};
 
-use tokio_postgres::NoTls;
-use tokio_pg_mapper_derive::PostgresMapper;
 use tokio_pg_mapper::Error as PGMError;
+use tokio_pg_mapper_derive::PostgresMapper;
 use tokio_postgres::error::Error as PGError;
+use tokio_postgres::{NoTls, Row};
 
 use deadpool_postgres::{Client, Config, Pool, PoolError};
 
@@ -29,16 +32,29 @@ impl MutationRoot {
 pub enum Size {
     Small,
     Medium,
-    Large
+    Large,
 }
 
-#[derive(SimpleObject, Clone, Eq, PartialEq, serde::Serialize, PostgresMapper)]
+#[derive(SimpleObject, Clone, Eq, PartialEq, serde::Serialize, PostgresMapper, Debug)]
 #[pg_mapper(table = "burgers")]
 pub struct Burger {
     #[serde(skip_serializing)]
     id: Option<String>,
     burger_type: String,
-    cost: i32
+    cost: i32,
+}
+
+impl From<Row> for Burger {
+    fn from(row: Row) -> Self {
+        let result: _ = row.get::<&str, i32>("id");
+        dbg!(result);
+
+        Self {
+            id: Some(row.get::<&str, i32>("id").to_string()),
+            burger_type: row.get("burger_type"),
+            cost: row.get("cost"),
+        }
+    }
 }
 
 #[derive(SimpleObject, Clone)]
@@ -46,7 +62,7 @@ pub struct Fries {
     // #[serde(skip_serializing)]
     id: Option<String>,
     size: Size,
-    cost: i32
+    cost: i32,
 }
 
 #[derive(Enum, PartialEq, Eq, Clone, Copy)]
@@ -54,7 +70,7 @@ pub enum DrinkType {
     Water,
     Coke,
     Sprite,
-    OrangeJuice
+    OrangeJuice,
 }
 
 #[derive(SimpleObject, Clone)]
@@ -63,7 +79,7 @@ pub struct Drink {
     id: Option<String>,
     size: Size,
     drink_type: DrinkType,
-    cost: i32
+    cost: i32,
 }
 
 #[derive(SimpleObject, Clone)]
@@ -74,43 +90,49 @@ pub struct Meal {
     burger: Burger,
     fries: Fries,
     drink: Drink,
-    cost: i32
+    cost: i32,
 }
 
 // this is my schema?
 #[derive(SimpleObject, Clone)]
 pub struct Menu {
     hello: String,
-    meals: Vec<Meal>
+    meals: Vec<Meal>,
+    burgers: Vec<Burger>,
 }
 
 impl Menu {
     pub async fn new() -> Self {
         Self {
             hello: "hello".to_string(),
-            meals: [
-                Meal {
-                    id: Some("123".to_string()),
-                    name: "Standard meal".to_string(),
-                    cost: 1200,
-                    burger: Burger {
-                        id: Some("124".to_string()),
-                        burger_type: "Cheesy".to_string(),
-                        cost: 500
-                    },
-                    fries: Fries {
-                        id: Some("125".to_string()),
-                        size: Size::Large,
-                        cost: 300
-                    },
-                    drink: Drink {
-                        id: Some("126".to_string()),
-                        size: Size::Large,
-                        drink_type: DrinkType::Water,
-                        cost: 200
-                    },
-                }
-            ].to_vec()
+            meals: [Meal {
+                id: Some("123".to_string()),
+                name: "Standard meal".to_string(),
+                cost: 1200,
+                burger: Burger {
+                    id: Some("124".to_string()),
+                    burger_type: "Cheesy".to_string(),
+                    cost: 500,
+                },
+                fries: Fries {
+                    id: Some("125".to_string()),
+                    size: Size::Large,
+                    cost: 300,
+                },
+                drink: Drink {
+                    id: Some("126".to_string()),
+                    size: Size::Large,
+                    drink_type: DrinkType::Water,
+                    cost: 200,
+                },
+            }]
+            .to_vec(),
+            burgers: [Burger {
+                id: Some("124".to_string()),
+                burger_type: "Cheesy".to_string(),
+                cost: 500,
+            }]
+            .to_vec(),
         }
     }
 }
@@ -125,6 +147,17 @@ impl QueryRoot {
     }
     async fn menu(&self) -> FieldResult<Menu> {
         Ok(Menu::new().await)
+    }
+    async fn get_burgers(&self, ctx: &Context<'_>) -> FieldResult<Vec<Burger>> {
+        let db = &ctx
+            .data_unchecked::<Pool>()
+            .get()
+            .await
+            .map_err(CustomError::PoolError)?;
+        dbg!(db);
+        let result = db.query("select * from burgers", &[]).await?;
+        let burgers: Vec<Burger> = result.into_iter().map(|row| Burger::from(row)).collect();
+        Ok(burgers.to_vec())
     }
 }
 
@@ -155,7 +188,7 @@ impl ResponseError for CustomError {
             CustomError::NotFound => HttpResponse::NotFound().finish(),
             CustomError::PoolError(ref err) => {
                 HttpResponse::InternalServerError().body(err.to_string())
-            },
+            }
             _ => HttpResponse::InternalServerError().finish(),
         }
     }
@@ -166,21 +199,27 @@ async fn initialise_db(db_pool: web::Data<Pool>) -> Result<HttpResponse, CustomE
 
     println!("initalising data now");
 
-    let result = client.execute(
-    "CREATE TABLE IF NOT EXISTS burgers (
+    let result = client
+        .execute(
+            "CREATE TABLE IF NOT EXISTS burgers (
        id serial PRIMARY KEY,
        burger_type VARCHAR (50) NOT NULL,
        cost serial NOT NULL
     );",
-    &[]).await;
+            &[],
+        )
+        .await;
 
     dbg!(result);
 
     println!("inserting dummy data in");
 
-    let result = client.execute("INSERT INTO burgers (burger_type, cost) VALUES ($1, $2)",
-        &[&"cheese".to_string(), &320]
-    ).await;
+    let result = client
+        .execute(
+            "INSERT INTO burgers (burger_type, cost) VALUES ($1, $2)",
+            &[&"cheese".to_string(), &320],
+        )
+        .await;
 
     dbg!(result);
 
@@ -200,48 +239,50 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
 
-    // let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
-    //     .data(Menu::new())
-    //     .finish();
+    let pool = Config::create_pool(
+        &deadpool_postgres::Config {
+            user: Some("postgres".to_string()),
+            password: Some("test".to_string()),
+            dbname: Some("test".to_string()),
+            host: Some("localhost".to_string()),
+            hosts: None,
+            port: Some(5432),
+            ports: None,
+            connect_timeout: None,
+            keepalives: None,
+            keepalives_idle: None,
+            application_name: Some("orders_api".to_string()),
+            channel_binding: None,
+            manager: None,
+            options: None,
+            ssl_mode: None,
+            target_session_attrs: None,
+            pool: None,
+        },
+        None,
+        NoTls,
+    )
+    .unwrap();
+
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+        .data(pool.clone())
+        .finish();
     // you must provision the data into the schema, it seems
-
-    // dotenv().ok();
-
-    // let config = Config::builder()
-    //     .add_source(::config::Environment::default())
-    //     .build()
-    //     .unwrap();
-
-    let pool = Config::create_pool(&deadpool_postgres::Config {
-        user: Some("postgres".to_string()),
-        password: Some("test".to_string()),
-        dbname: Some("test".to_string()),
-        host: Some("localhost".to_string()),
-        hosts: None,
-        port: Some(5432),
-        ports: None,
-        connect_timeout: None,
-        keepalives: None,
-        keepalives_idle: None,
-        application_name: Some("orders_api".to_string()),
-        channel_binding: None,
-        manager: None,
-        options: None,
-        ssl_mode: None,
-        target_session_attrs: None,
-        pool: None,
-    }, None, NoTls).unwrap();
 
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::new(pool.clone()))
+            .app_data(Data::new(schema.clone()))
             // .service(get_order)
             // .service(create_order)
             .service(web::resource("/").guard(guard::Post()).to(index))
             .service(web::resource("/").guard(guard::Get()).to(index_playground))
-            .service(web::resource("/menu/initialise").guard(guard::Get()).to(initialise_db))
+            .service(
+                web::resource("/menu/initialise")
+                    .guard(guard::Get())
+                    .to(initialise_db),
+            )
     })
-        .bind(("127.0.0.1", 8000))?
-        .run()
-        .await
+    .bind(("127.0.0.1", 8001))?
+    .run()
+    .await
 }

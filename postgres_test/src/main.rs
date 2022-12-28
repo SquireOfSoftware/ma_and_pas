@@ -7,9 +7,11 @@ struct Person {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let (client, connection) =
-        tokio_postgres::connect("host=localhost user=postgres password=test port=5432", NoTls)
-            .await?;
+    let (client, connection) = tokio_postgres::connect(
+        "host=localhost user=postgres password=test port=5432",
+        NoTls,
+    )
+    .await?;
 
     tokio::spawn(async move {
         if let Err(e) = connection.await {
@@ -32,8 +34,7 @@ async fn main() -> Result<(), Error> {
     // )
     //     .await?;
 
-    for row in client.query("SELECT id, name FROM person", &[])
-        .await? {
+    for row in client.query("SELECT id, name FROM person", &[]).await? {
         let id: i32 = row.get(0);
         let name: &str = row.get(1);
 
