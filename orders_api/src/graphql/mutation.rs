@@ -1,6 +1,6 @@
+use crate::models::{Burger, CustomError, MenuItem};
 use async_graphql::{Context, FieldResult, Object};
 use deadpool_postgres::Pool;
-use crate::models::{Burger, CustomError, MenuItem};
 
 pub struct MutationRoot;
 
@@ -10,26 +10,34 @@ impl MutationRoot {
         a + b
     }
 
-    async fn add_burger(&self, ctx: &Context<'_>, id: String, name: String, cost: i32) -> FieldResult<Burger> {
+    async fn add_burger(
+        &self,
+        ctx: &Context<'_>,
+        id: String,
+        name: String,
+        cost: i32,
+    ) -> FieldResult<Burger> {
         let db = &ctx
             .data_unchecked::<Pool>()
             .get()
             .await
             .map_err(CustomError::PoolError)?;
 
-        db
-            .execute(
-                "INSERT INTO menu (code_name, display_name, active, type) VALUES ($1, $2, $3, $4)",
-                &[&id.to_string().to_lowercase(),
-                    &name.to_string(),
-                    &true,
-                    &MenuItem::Burger.to_string().to_lowercase()
-                ],
-            )
-            .await?;
+        db.execute(
+            "INSERT INTO menu (code_name, display_name, active, type) VALUES ($1, $2, $3, $4)",
+            &[
+                &id.to_string().to_lowercase(),
+                &name.to_string(),
+                &true,
+                &MenuItem::Burger.to_string().to_lowercase(),
+            ],
+        )
+        .await?;
 
-        let result =
-            db.query_one("SELECT * from menu where code_name = '$1'", &[&id]).await.unwrap();
+        let result = db
+            .query_one("SELECT * from menu where code_name = '$1'", &[&id])
+            .await
+            .unwrap();
 
         dbg!(&result);
 
@@ -156,7 +164,6 @@ CREATE TABLE IF NOT EXISTS meals_sides (
 INSERT INTO people (first_name, last_name, created_date) values ('john', 'smith', now());"
         )
             .await?;
-
 
         Ok("done".to_string())
     }

@@ -4,9 +4,9 @@ use async_graphql::{EmptySubscription, Schema};
 
 use dotenvy::dotenv;
 
-use orders_api::graphql::{QueryRoot, MutationRoot};
+use orders_api::app_config::{create_db_pool, get_app_port};
+use orders_api::graphql::{MutationRoot, QueryRoot};
 use orders_api::routes::graphql::{index, index_playground};
-use orders_api::app_config::{get_app_port, create_db_pool};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

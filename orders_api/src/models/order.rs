@@ -5,5 +5,4 @@ use serde::Serialize;
 pub struct Order {
     person: String,
     id: Option<String>,
-
 }

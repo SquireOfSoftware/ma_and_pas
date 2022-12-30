@@ -1,9 +1,9 @@
+use crate::models::ShopSchema;
 use actix_web::error::HttpError;
-use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
-use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use actix_web::web::Data;
 use actix_web::HttpResponse;
-use crate::models::ShopSchema;
+use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 
 pub async fn index(schema: Data<ShopSchema>, req: GraphQLRequest) -> GraphQLResponse {
     schema.execute(req.into_inner()).await.into()

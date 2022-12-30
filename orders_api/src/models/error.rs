@@ -1,8 +1,8 @@
-use std::error::Error;
 use actix_web::{HttpResponse, ResponseError};
-use tokio_postgres::error::Error as PGError;
 use deadpool_postgres::PoolError;
 use derive_more::{Display, From};
+use std::error::Error;
+use tokio_postgres::error::Error as PGError;
 
 #[derive(Display, Debug, From)]
 pub enum CustomError {

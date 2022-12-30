@@ -1,7 +1,7 @@
-use async_graphql::SimpleObject;
 use crate::models::Burger;
-use crate::models::Fries;
 use crate::models::Drink;
+use crate::models::Fries;
+use async_graphql::SimpleObject;
 
 #[derive(SimpleObject, Clone)]
 pub struct Meal {

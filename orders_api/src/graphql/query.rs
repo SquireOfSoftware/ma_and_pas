@@ -16,11 +16,16 @@ impl QueryRoot {
             .await
             .map_err(CustomError::PoolError)?;
 
-        let result = db.query("select * from burgers where active = true", &[])
+        let result = db
+            .query("select * from burgers where active = true", &[])
             .await
             .unwrap();
 
-        Ok(result.into_iter().map(|row| Burger::from(row)).collect::<Vec<Burger>>().to_vec())
+        Ok(result
+            .into_iter()
+            .map(|row| Burger::from(row))
+            .collect::<Vec<Burger>>()
+            .to_vec())
     }
 
     async fn get_drinks(&self, ctx: &Context<'_>) -> FieldResult<Vec<Drink>> {
@@ -30,10 +35,18 @@ impl QueryRoot {
             .await
             .map_err(CustomError::PoolError)?;
 
-        let result = db.query("select * from sides where active = true and type ='drink'", &[])
+        let result = db
+            .query(
+                "select * from sides where active = true and type ='drink'",
+                &[],
+            )
             .await
             .unwrap();
 
-        Ok(result.into_iter().map(|row| Drink::from(row)).collect::<Vec<Drink>>().to_vec())
+        Ok(result
+            .into_iter()
+            .map(|row| Drink::from(row))
+            .collect::<Vec<Drink>>()
+            .to_vec())
     }
 }

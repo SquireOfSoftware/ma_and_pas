@@ -1,5 +1,4 @@
-
-mod query;
 mod mutation;
-pub use query::QueryRoot;
+mod query;
 pub use mutation::MutationRoot;
+pub use query::QueryRoot;

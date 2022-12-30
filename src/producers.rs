@@ -19,9 +19,9 @@ async fn produce(server: &str, queue: &str) {
                     FutureRecord::to(queue)
                         .payload(&format!("Message Chezburger{}", i))
                         .key(&format!("Key {}", i)), // .headers(OwnedHeaders::new().insert(Header {
-                                                     //     key: "header_key",
-                                                     //     value: Some("header_value")
-                                                     // }))
+                    //     key: "header_key",
+                    //     value: Some("header_value")
+                    // }))
                     Duration::from_secs(0),
                 )
                 .await;

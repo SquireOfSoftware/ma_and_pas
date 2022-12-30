@@ -1,9 +1,9 @@
+use crate::models::burger::BurgerType::{Beef, Cheese, Chicken, Fish, Ham, Unknown};
 use async_graphql::{Enum, SimpleObject};
-use tokio_postgres::Row;
+use derive_more::Display;
 use serde::Serialize;
 use std::str::FromStr;
-use derive_more::Display;
-use crate::models::burger::BurgerType::{Beef, Cheese, Chicken, Fish, Ham, Unknown};
+use tokio_postgres::Row;
 
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, Serialize, Display)]
 pub enum BurgerType {
@@ -44,7 +44,7 @@ impl From<Row> for Burger {
             id: Some(row.get::<&str, &str>("code_name").to_string()),
             name: row.get::<&str, &str>("name").to_string(),
             active: row.get::<&str, bool>("active"),
-            cost: row.get::<&str, i32>("cost")
+            cost: row.get::<&str, i32>("cost"),
         }
     }
 }

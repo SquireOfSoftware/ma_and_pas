@@ -1,5 +1,5 @@
-use std::env::var;
 use deadpool_postgres::{Config, Pool};
+use std::env::var;
 use tokio_postgres::NoTls;
 
 const PG_USER: &str = "POSTGRES_USER";
@@ -12,19 +12,42 @@ const APP_PORT: &str = "APP_PORT";
 pub async fn get_app_port() -> u16 {
     match var(APP_PORT) {
         Ok(port) => port.parse::<u16>().unwrap(),
-        Err(_) => 8001
+        Err(_) => 8001,
     }
 }
 
 pub async fn create_db_pool() -> Pool {
     Config::create_pool(
         &Config {
-            user: Some(var(PG_USER).expect(&format!("{} must be set", PG_USER).to_string()).to_string()),
-            password: Some(var(PG_PASSWORD).expect(&format!("{} must be set", PG_PASSWORD).to_string()).to_string()),
-            dbname: Some(var(DB_NAME).expect(&format!("{} must be set", DB_NAME)).to_string().to_string()),
-            host: Some(var(DB_HOST).expect(&format!("{} must be set", DB_HOST)).to_string().to_string()),
+            user: Some(
+                var(PG_USER)
+                    .expect(&format!("{} must be set", PG_USER).to_string())
+                    .to_string(),
+            ),
+            password: Some(
+                var(PG_PASSWORD)
+                    .expect(&format!("{} must be set", PG_PASSWORD).to_string())
+                    .to_string(),
+            ),
+            dbname: Some(
+                var(DB_NAME)
+                    .expect(&format!("{} must be set", DB_NAME))
+                    .to_string()
+                    .to_string(),
+            ),
+            host: Some(
+                var(DB_HOST)
+                    .expect(&format!("{} must be set", DB_HOST))
+                    .to_string()
+                    .to_string(),
+            ),
             hosts: None,
-            port: Some(var(DB_PORT).expect(&format!("{} must be set", DB_PORT).to_string()).parse::<u16>().unwrap()),
+            port: Some(
+                var(DB_PORT)
+                    .expect(&format!("{} must be set", DB_PORT).to_string())
+                    .parse::<u16>()
+                    .unwrap(),
+            ),
             ports: None,
             connect_timeout: None,
             keepalives: None,
@@ -40,9 +63,8 @@ pub async fn create_db_pool() -> Pool {
         None,
         NoTls,
     )
-        .unwrap()
+    .unwrap()
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -7,7 +7,7 @@ use serde::Serialize;
 pub enum MenuItem {
     Burger,
     Fries,
-    Drink
+    Drink,
 }
 
 #[derive(SimpleObject, Clone)]
@@ -20,8 +20,7 @@ impl Menu {
     pub async fn new() -> Self {
         Self {
             hello: "hello".to_string(),
-            burgers: []
-                .to_vec(),
+            burgers: [].to_vec(),
         }
     }
 }

@@ -17,7 +17,7 @@ pub struct Drink {
     pub name: String,
     pub size: Size,
     pub cost: i32,
-    pub active: bool
+    pub active: bool,
 }
 
 impl From<Row> for Drink {
