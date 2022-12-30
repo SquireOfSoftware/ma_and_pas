@@ -4,6 +4,7 @@ mod error;
 mod fry;
 mod meal;
 mod menu;
+mod order;
 mod schema;
 mod size;
 
@@ -15,5 +16,7 @@ pub use error::CustomError;
 pub use fry::Fries;
 pub use meal::Meal;
 pub use menu::Menu;
+pub use menu::MenuItem;
+pub use order::Order;
 pub use schema::ShopSchema;
 pub use size::Size;

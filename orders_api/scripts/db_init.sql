@@ -1,51 +1,7 @@
-use async_graphql::{Context, FieldResult, Object};
-use deadpool_postgres::Pool;
-use crate::models::{Burger, BurgerType, CustomError, Menu, MenuItem};
+-- auto binding new db creations
+CREATE DATABASE orders;
 
-pub struct MutationRoot;
-
-#[Object]
-impl MutationRoot {
-    async fn add(&self, a: i32, b: i32) -> i32 {
-        a + b
-    }
-
-    async fn add_burger(&self, ctx: &Context<'_>, id: String, name: String, cost: i32) -> FieldResult<Burger> {
-        let db = &ctx
-            .data_unchecked::<Pool>()
-            .get()
-            .await
-            .map_err(CustomError::PoolError)?;
-
-        db
-            .execute(
-                "INSERT INTO menu (code_name, display_name, active, type) VALUES ($1, $2, $3, $4)",
-                &[&id.to_string().to_lowercase(),
-                    &name.to_string(),
-                    &true,
-                    &MenuItem::Burger.to_string().to_lowercase()
-                ],
-            )
-            .await?;
-
-        let result =
-            db.query_one("SELECT * from menu where code_name = '$1'", &[&id]).await.unwrap();
-
-        dbg!(&result);
-
-        Ok(Burger::from(result))
-    }
-    // this mutation requires that the base db has been setup
-    // if the base db has not been setup then you need to go in and create the db first
-    async fn initialise_db(&self, ctx: &Context<'_>) -> FieldResult<String> {
-        let db = &ctx
-            .data_unchecked::<Pool>()
-            .get()
-            .await
-            .map_err(CustomError::PoolError)?;
-
-        db.batch_execute(
-            "CREATE TABLE IF NOT EXISTS people (
+CREATE TABLE IF NOT EXISTS people (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name VARCHAR NOT NULL,
     last_name VARCHAR NOT NULL,
@@ -153,11 +109,4 @@ CREATE TABLE IF NOT EXISTS meals_sides (
     CONSTRAINT fk_side FOREIGN KEY(side_id, side_size, side_type) REFERENCES sides(code_name, size, type)
 );
 
-INSERT INTO people (first_name, last_name, created_date) values ('john', 'smith', now());"
-        )
-            .await?;
-
-
-        Ok("done".to_string())
-    }
-}
+INSERT INTO people (first_name, last_name, created_date) values ('john', 'smith', now());

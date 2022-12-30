@@ -9,9 +9,6 @@ impl QueryRoot {
     async fn hello(&self) -> FieldResult<&str> {
         Ok("hello")
     }
-    async fn menu(&self) -> FieldResult<Menu> {
-        Ok(Menu::new().await)
-    }
     async fn get_burgers(&self, ctx: &Context<'_>) -> FieldResult<Vec<Burger>> {
         let db = &ctx
             .data_unchecked::<Pool>()
@@ -19,7 +16,7 @@ impl QueryRoot {
             .await
             .map_err(CustomError::PoolError)?;
 
-        let result = db.query("select * from burgers", &[])
+        let result = db.query("select * from burgers where active = true", &[])
             .await
             .unwrap();
 

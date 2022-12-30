@@ -1,4 +1,4 @@
-use async_graphql::{Enum, SimpleObject};
+use async_graphql::{Enum, InputObject, SimpleObject};
 use tokio_postgres::Row;
 use serde::Serialize;
 use std::str::FromStr;
@@ -33,23 +33,18 @@ impl FromStr for BurgerType {
 #[derive(SimpleObject, Clone, Eq, PartialEq, Serialize, Debug)]
 pub struct Burger {
     pub id: Option<String>,
-    pub burger_type: BurgerType,
-    pub cost: i32,
-}
-
-#[derive(SimpleObject, Clone, Eq, PartialEq, Serialize, Debug)]
-pub struct CheeseBurger {
-    pub id: Option<String>,
+    pub name: String,
+    pub active: bool,
     pub cost: i32,
 }
 
 impl From<Row> for Burger {
     fn from(row: Row) -> Self {
         Self {
-            id: Some(row.get::<&str, i32>("id").to_string()),
-            burger_type: BurgerType::from_str(row.get("burger_type"))
-                .unwrap(),
-            cost: row.get("cost"),
+            id: Some(row.get::<&str, &str>("code_name").to_string()),
+            name: row.get::<&str, &str>("name").to_string(),
+            active: row.get::<&str, bool>("active"),
+            cost: row.get::<&str, i32>("cost")
         }
     }
 }
