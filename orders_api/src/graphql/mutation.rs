@@ -1,6 +1,6 @@
 use async_graphql::{Context, FieldResult, Object};
 use deadpool_postgres::Pool;
-use crate::models::{Burger, BurgerType, CustomError, Menu, MenuItem};
+use crate::models::{Burger, CustomError, MenuItem};
 
 pub struct MutationRoot;
 

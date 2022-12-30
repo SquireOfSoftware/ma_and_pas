@@ -1,4 +1,4 @@
-use async_graphql::{Enum, InputObject, SimpleObject};
+use async_graphql::{Enum, SimpleObject};
 use tokio_postgres::Row;
 use serde::Serialize;
 use std::str::FromStr;

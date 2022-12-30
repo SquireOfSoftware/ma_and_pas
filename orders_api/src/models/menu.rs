@@ -1,10 +1,4 @@
-use crate::models::Meal;
 use crate::models::Burger;
-use crate::models::burger::BurgerType;
-use crate::models::Drink;
-use crate::models::DrinkType;
-use crate::models::Fries;
-use crate::models::Size;
 use async_graphql::{Enum, SimpleObject};
 use derive_more::Display;
 use serde::Serialize;
