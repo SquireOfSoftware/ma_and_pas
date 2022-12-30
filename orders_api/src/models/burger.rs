@@ -2,14 +2,16 @@ use async_graphql::{Enum, SimpleObject};
 use tokio_postgres::Row;
 use serde::Serialize;
 use std::str::FromStr;
-use crate::models::burger::BurgerType::{Beef, Cheese, Chicken, Ham, Unknown};
+use derive_more::Display;
+use crate::models::burger::BurgerType::{Beef, Cheese, Chicken, Fish, Ham, Unknown};
 
-#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, Serialize)]
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, Serialize, Display)]
 pub enum BurgerType {
     Cheese,
     Ham,
     Beef,
     Chicken,
+    Fish,
     Unknown,
 }
 
@@ -22,6 +24,7 @@ impl FromStr for BurgerType {
             "ham" => Ok(Ham),
             "beef" => Ok(Beef),
             "chicken" => Ok(Chicken),
+            "fish" => Ok(Fish),
             _ => Ok(Unknown),
         }
     }
@@ -31,6 +34,12 @@ impl FromStr for BurgerType {
 pub struct Burger {
     pub id: Option<String>,
     pub burger_type: BurgerType,
+    pub cost: i32,
+}
+
+#[derive(SimpleObject, Clone, Eq, PartialEq, Serialize, Debug)]
+pub struct CheeseBurger {
+    pub id: Option<String>,
     pub cost: i32,
 }
 

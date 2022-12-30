@@ -8,6 +8,7 @@ mod schema;
 mod size;
 
 pub use burger::Burger;
+pub use burger::BurgerType;
 pub use drink::Drink;
 pub use drink::DrinkType;
 pub use error::CustomError;
