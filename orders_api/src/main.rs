@@ -1,21 +1,21 @@
 use actix_web::error::HttpError;
 use actix_web::web::Data;
-use actix_web::{get, guard, web, App, HttpResponse, HttpServer, ResponseError};
+use actix_web::{guard, web, App, HttpResponse, HttpServer, ResponseError};
 use async_graphql::{
     http::{playground_source, GraphQLPlaygroundConfig},
     Context, EmptySubscription, Enum, FieldResult, Object, Schema, SimpleObject,
 };
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
-use serde::{Deserialize, Serialize};
 
 use derive_more::{Display, From};
 
 use tokio_pg_mapper::Error as PGMError;
-use tokio_pg_mapper_derive::PostgresMapper;
 use tokio_postgres::error::Error as PGError;
-use tokio_postgres::{NoTls, Row};
+use tokio_postgres::{NoTls};
 
 use deadpool_postgres::{Client, Config, Pool, PoolError};
+
+use orders_api::models::Burger;
 
 pub type ShopSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 
@@ -33,23 +33,6 @@ pub enum Size {
     Small,
     Medium,
     Large,
-}
-
-#[derive(SimpleObject, Clone, Eq, PartialEq, serde::Serialize, Debug)]
-pub struct Burger {
-    id: Option<String>,
-    burger_type: String,
-    cost: i32,
-}
-
-impl From<Row> for Burger {
-    fn from(row: Row) -> Self {
-        Self {
-            id: Some(row.get::<&str, i32>("id").to_string()),
-            burger_type: row.get("burger_type"),
-            cost: row.get("cost"),
-        }
-    }
 }
 
 #[derive(SimpleObject, Clone)]
@@ -191,9 +174,7 @@ impl ResponseError for CustomError {
 async fn initialise_db(db_pool: web::Data<Pool>) -> Result<HttpResponse, CustomError> {
     let client: Client = db_pool.get().await.map_err(CustomError::PoolError)?;
 
-    println!("initalising data now");
-
-    let result = client
+    client
         .execute(
             "CREATE TABLE IF NOT EXISTS burgers (
        id serial PRIMARY KEY,
@@ -202,18 +183,14 @@ async fn initialise_db(db_pool: web::Data<Pool>) -> Result<HttpResponse, CustomE
     );",
             &[],
         )
-        .await;
+        .await?;
 
-    dbg!(result);
-
-    let result = client
+    client
         .execute(
             "INSERT INTO burgers (burger_type, cost) VALUES ($1, $2)",
             &[&"cheese".to_string(), &320],
         )
-        .await;
-
-    dbg!(result);
+        .await?;
 
     Ok(HttpResponse::Ok().json("dummy data has been initalised"))
 }
@@ -256,8 +233,6 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(schema.clone()))
-            // .service(get_order)
-            // .service(create_order)
             .service(web::resource("/").guard(guard::Post()).to(index))
             .service(web::resource("/").guard(guard::Get()).to(index_playground))
             .service(
