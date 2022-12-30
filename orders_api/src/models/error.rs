@@ -1,6 +1,5 @@
 use std::error::Error;
 use actix_web::{HttpResponse, ResponseError};
-use tokio_pg_mapper::Error as PGMError;
 use tokio_postgres::error::Error as PGError;
 use deadpool_postgres::PoolError;
 use derive_more::{Display, From};
@@ -9,7 +8,7 @@ use derive_more::{Display, From};
 pub enum CustomError {
     NotFound,
     PGError(PGError),
-    PGMError(PGMError),
+    PGMError,
     PoolError(PoolError),
 }
 
