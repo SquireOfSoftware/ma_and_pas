@@ -1,8 +1,10 @@
-use std::error::Error;
-use crate::models::{Burger, CustomError, Drink, MenuItem, Order, Person};
+use crate::graphql::query::{get_burgers_from, get_drinks_from, get_person_from, get_sides_from};
+use crate::models::{Burger, CustomError, Drink, MenuItem, Order, Person, Side};
 use async_graphql::{Context, FieldResult, Object};
-use deadpool_postgres::{Manager, Object, Pool};
-use crate::graphql::query::{get_burgers_from, get_drinks_from, get_sides_from};
+use deadpool_postgres::Pool;
+use std::str::FromStr;
+use tokio_postgres::types::ToSql;
+use uuid::Uuid;
 
 pub struct MutationRoot;
 
@@ -17,7 +19,7 @@ impl MutationRoot {
         ctx: &Context<'_>,
         id: String,
         name: String,
-        cost: i32,
+        _cost: i32,
     ) -> FieldResult<Burger> {
         let db = &ctx
             .data_unchecked::<Pool>()
@@ -170,64 +172,88 @@ INSERT INTO people (first_name, last_name, created_date) values ('john', 'smith'
         Ok("done".to_string())
     }
 
-    async fn create_order(&self,
-                          ctx: &Context<'_>,
-                          person_id: String,
-                          burger_ids: Vec<String>,
-                          drink_ids: Vec<String>,
-                          side_ids: Vec<String>) -> FieldResult<Order> {
+    async fn create_order(
+        &self,
+        ctx: &Context<'_>,
+        person_id: String,
+        burger_ids: Vec<String>,
+        drink_ids: Vec<String>,
+        side_ids: Vec<String>,
+    ) -> FieldResult<Order> {
         // verify the ids
-        let mut db = &ctx
+        let db = ctx
             .data_unchecked::<Pool>()
             .get()
             .await
-            .map_err(CustomError::PoolError)?;
+            .map_err(CustomError::PoolError)
+            .unwrap();
+
+        let burgers = get_burgers_from(burger_ids, &db).await?;
+        let drinks = get_drinks_from(drink_ids, &db).await?;
+        let sides = get_sides_from(side_ids, &db).await?;
+
+        let person = get_person_from(person_id, &db).await.unwrap();
 
         // using the order to calculate the total cost
-        // let order = create_order(db, person_id, burger_ids, drink_ids, side_ids);
+        let order = create_order(ctx, person, burgers, drinks, sides).await?;
 
-        Ok(Order {
-            person: "".to_string(),
-            id: None,
-            cost: 0,
-            burgers: Vec::new(),
-            drinks: Vec::new(),
-            fries: Vec::new()
-        })
+        dbg!(&order);
+
+        Ok(order)
     }
 }
 
-// async fn create_order(db: &mut Object,
-//                       person_id: String,
-//                       burger_ids: Vec<String>,
-//                       drink_ids: Vec<String>,
-//                       side_ids: Vec<String>) -> Result<Order, CustomError> {
-//     let burgers = get_burgers_from(burger_ids, db).await?;
-//     let drinks = get_drinks_from(drink_ids, db).await?;
-//     let sides = get_sides_from(side_ids, db).await?;
-//
-//     let person = get_person_from(person_id, db).await?;
-//
-//     let transaction = db.transaction().await.unwrap();
-//
-//     transaction.execute(
-//         "INSERT INTO orders (created_date, cost, person_id RETURNING id"
-//     )
-//
-//     // create an order, then create all the respective stuff under it
-//
-//     transaction.commit();
-//
-//     Ok(
-//
-//     )
-//
-// }
-//
-// async fn person_exists(id: String, db: &Object) -> Result<Person, CustomError> {
-//     let result = db.query_one("SELECT exists(SELECT 1 from people WHERE id = $1", &[id]).await?;
-//
-//     match result.get() {
-//
-//     }
-// }
+async fn create_order(
+    ctx: &Context<'_>,
+    person: Person,
+    burgers: Vec<Burger>,
+    drinks: Vec<Drink>,
+    sides: Vec<Side>,
+) -> Result<Order, CustomError> {
+    let cost = burgers.iter().map(|burger| burger.cost).sum::<i32>()
+        + drinks.iter().map(|drink| drink.cost).sum::<i32>()
+        + sides.iter().map(|side| side.cost).sum::<i32>();
+
+    let mut db = ctx
+        .data_unchecked::<Pool>()
+        .get()
+        .await
+        .map_err(CustomError::PoolError)
+        .unwrap();
+
+    let person_id = Uuid::from_str(&person.id.as_ref().unwrap().as_str()).unwrap();
+
+    let mut params: Vec<&(dyn ToSql + Sync)> = vec![&cost];
+    params.push(&person_id);
+
+    let transaction = db.transaction().await?;
+
+    let order_result = transaction.query_one(
+        "INSERT INTO orders (created_date, cost, person_id) VALUES (now(), $1, $2) RETURNING id",
+        &params[..]
+    ).await?;
+
+    dbg!(&order_result, &cost);
+    // create an order, then create all the respective stuff under it
+
+    transaction.commit().await?;
+
+    let order_id = order_result.get::<&str, Uuid>("id");
+
+    dbg!(&order_id);
+
+    let order = db
+        .query_one("SELECT * from orders WHERE id = $1", &[&order_id])
+        .await;
+
+    dbg!(&order);
+
+    Ok(Order {
+        person: person.id.unwrap(),
+        id: Some(order_id.to_string()),
+        cost: Some(cost),
+        burgers: Some(burgers),
+        drinks: Some(drinks),
+        sides: Some(sides),
+    })
+}

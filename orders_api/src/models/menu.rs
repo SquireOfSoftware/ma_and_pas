@@ -15,4 +15,3 @@ pub struct Menu {
     hello: String,
     burgers: Vec<Burger>,
 }
-
