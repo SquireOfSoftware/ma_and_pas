@@ -1,8 +1,13 @@
 use async_graphql::{InputObject, SimpleObject};
 use serde::Serialize;
+use crate::models::{Burger, Drink, Side, Meal};
 
-#[derive(InputObject, SimpleObject, Clone, Eq, PartialEq, Serialize, Debug)]
+#[derive(SimpleObject, Clone, Eq, PartialEq, Serialize, Debug)]
 pub struct Order {
-    person: String,
-    id: Option<String>,
+    pub person: String,
+    pub id: Option<String>,
+    pub cost: u32,
+    pub burgers: Vec<Burger>,
+    pub drinks: Vec<Drink>,
+    pub fries: Vec<Side>
 }

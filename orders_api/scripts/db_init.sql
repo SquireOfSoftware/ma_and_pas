@@ -5,14 +5,14 @@ CREATE TABLE IF NOT EXISTS people (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name VARCHAR NOT NULL,
     last_name VARCHAR NOT NULL,
-    created_date TIMESTAMP NOT NULL
+    created_date TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS orders (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_date TIMESTAMP NOT NULL,
-    submitted_date TIMESTAMP, -- when the order was made
-    delivered_date TIMESTAMP, -- when the order was delivered
+    created_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    submitted_date TIMESTAMP WITH TIME ZONE, -- when the order was made
+    delivered_date TIMESTAMP WITH TIME ZONE, -- when the order was delivered
     cost serial, -- null means its free, measures cents
     person_id uuid,
     CONSTRAINT fk_person FOREIGN KEY(person_id) REFERENCES people(id)

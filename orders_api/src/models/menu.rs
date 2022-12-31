@@ -16,11 +16,3 @@ pub struct Menu {
     burgers: Vec<Burger>,
 }
 
-impl Menu {
-    pub async fn new() -> Self {
-        Self {
-            hello: "hello".to_string(),
-            burgers: [].to_vec(),
-        }
-    }
-}
