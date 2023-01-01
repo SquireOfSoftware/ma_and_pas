@@ -1,8 +1,9 @@
 use crate::models::Size::{Large, Medium, Small, Unknown};
 use async_graphql::Enum;
+use derive_more::Display;
 use serde::Serialize;
 
-#[derive(Enum, Eq, PartialEq, Copy, Clone, Serialize, Debug)]
+#[derive(Enum, Eq, PartialEq, Copy, Clone, Serialize, Debug, Display)]
 pub enum Size {
     Small,
     Medium,

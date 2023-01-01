@@ -232,13 +232,55 @@ async fn create_order(
         "INSERT INTO orders (created_date, cost, person_id) VALUES (now(), $1, $2) RETURNING id",
         &params[..]
     ).await?;
+    let order_id = order_result.get::<&str, Uuid>("id");
 
     dbg!(&order_result, &cost);
     // create an order, then create all the respective stuff under it
 
-    transaction.commit().await?;
+    // save the burgers out
+    for burger in &burgers {
+        let burger_id = burger.id.as_ref().expect("id should be provided").as_str();
+        let params: Vec<&(dyn ToSql + Sync)> = vec![
+            &burger_id,
+            &order_id];
+        transaction.execute(
+            "INSERT INTO order_burgers (burger_id, order_id) VALUES ($1, $2)",
+            &params[..]
+        ).await?;
+    }
 
-    let order_id = order_result.get::<&str, Uuid>("id");
+    // save the drinks out
+    for drink in &drinks {
+        let drink_id = drink.id.as_ref().expect("id should be provided").as_str();
+        let params: Vec<&(dyn ToSql + Sync)> = vec![
+            &drink_id,
+            &drink.name,
+            &"drink",
+            &order_id
+        ];
+        transaction.execute(
+            "INSERT INTO order_sides (side_id, side_size, side_type, order_id) VALUES ($1, $2, $3, $4)",
+            &params[..]
+        ).await?;
+    }
+
+    // save the sides out
+    for side in &sides {
+        let side_id = side.id.as_ref().expect("id should be provided").as_str();
+        let side_size = side.size.to_string().to_lowercase();
+        let params: Vec<&(dyn ToSql + Sync)> = vec![
+            &side_id,
+            &side_size,
+            &side.side_type,
+            &order_id
+        ];
+        transaction.execute(
+            "INSERT INTO order_sides (side_id, side_size, side_type, side_type, order_id) VALUES ($1, $2, $3, $4)",
+            &params[..]
+        ).await?;
+    }
+
+    transaction.commit().await?;
 
     dbg!(&order_id);
 

@@ -9,6 +9,7 @@ pub struct Side {
     pub name: String,
     pub size: Size,
     pub cost: i32,
+    pub side_type: String,
 }
 
 impl From<Row> for Side {
@@ -17,6 +18,7 @@ impl From<Row> for Side {
             id: Some(row.get::<&str, &str>("code_name").to_string()),
             name: row.get::<&str, &str>("name").to_string(),
             size: Size::from(row.get::<&str, &str>("size")),
+            side_type: row.get::<&str, &str>("type").to_string(),
             cost: row.get::<&str, i32>("cost"),
         }
     }
