@@ -40,6 +40,7 @@ pub struct Burger {
 
 impl From<Row> for Burger {
     fn from(row: Row) -> Self {
+        dbg!("row", &row);
         Self {
             id: Some(row.get::<&str, &str>("code_name").to_string()),
             name: row.get::<&str, &str>("name").to_string(),

@@ -75,3 +75,6 @@ https://www.youtube.com/watch?v=iOyvum0D3LM
 
 SurrealDB is a real pain in the butt so gonna switch to tokio postgres:
 https://github.com/actix/examples/tree/master/databases/postgres
+
+Can also use this for integration test notes for async graphql:
+https://konkle.us/async-graphql-with-rust-part-four/

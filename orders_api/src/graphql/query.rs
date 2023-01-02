@@ -1,8 +1,9 @@
 use crate::models::CustomError::NotFound;
-use crate::models::{Burger, CustomError, Drink, Person, Side};
+use crate::models::{Burger, CustomError, Drink, Order, Person, Side};
 use async_graphql::{Context, FieldResult, Object};
 use deadpool_postgres::{Object, Pool};
 use std::str::FromStr;
+use tokio_postgres::Row;
 use uuid::Uuid;
 
 pub struct QueryRoot;
@@ -109,14 +110,132 @@ impl QueryRoot {
             None => {
                 let result = db.query("select * from people", &[]).await.unwrap();
 
-                Ok(result
-                    .into_iter()
-                    .map(|row| Person::from(row))
-                    .collect::<Vec<Person>>()
-                    .to_vec())
+                let mut people = Vec::new();
+                for row in result {
+                    let person_id = row.get::<&str, Uuid>("id");
+                    let orders = if ctx.look_ahead().field("orders").exists() {
+                        get_orders_from(person_id, db).await?
+                    } else {
+                        vec![]
+                    };
+
+                    dbg!(&orders);
+
+                    people.push(Person::build(row, orders))
+                }
+
+                Ok(people)
             }
             Some(ids) => Ok(get_people_from(ids, db).await?),
         }
+    }
+}
+
+pub async fn get_orders_from(person_id: Uuid, db: &Object) -> Result<Vec<Order>, CustomError> {
+    let result = db.query(
+        "SELECT * FROM orders WHERE person_id = $1",
+        &[&person_id]
+    ).await?;
+
+    match result.len() {
+        0 => Ok(Vec::new()),
+        _ => {
+            let mut orders = Vec::new();
+
+            for row in result {
+                orders.push(get_order(&row, db).await?);
+            }
+
+            // then return everything
+            Ok(orders)
+        }
+    }
+
+}
+
+pub async fn get_order(row: &Row, db: &Object) -> Result<Order, CustomError> {
+    let order_id = row.get::<&str, Uuid>("id");
+
+    dbg!(&order_id, "test");
+
+    // for each order, query for burgers
+    let burgers = get_burgers_from_order(&order_id, db).await?;
+
+    // for each order, query for drinks
+    let drinks = get_drinks_from_order(&order_id, db).await?;
+
+    // for each order, query for sides
+    let sides = get_sides_from_order(&order_id, db).await?;
+
+    Ok(Order::build(row, burgers, drinks, sides))
+}
+
+async fn get_drinks_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Drink>, CustomError> {
+    let result = db.query(
+        "select s.* from sides as s join order_sides as os \
+        ON s.code_name = os.side_id \
+        AND s.size = os.side_size \
+        AND s.type = os.side_type \
+        WHERE os.order_id = $1 AND s.type = 'drink'",
+        &[order_id]
+    ).await?;
+
+    if result.is_empty() {
+        Ok(vec![])
+    } else {
+        let mut drinks = Vec::new();
+
+        for row in result {
+            drinks.push(Drink::from(row))
+        }
+
+        Ok(drinks)
+    }
+}
+
+async fn get_sides_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Side>, CustomError> {
+    let result = db.query(
+                "select s.* from sides as s join order_sides as os \
+        ON s.code_name = os.side_id \
+        AND s.size = os.side_size \
+        AND s.type = os.side_type \
+        WHERE os.order_id = $1 AND s.type != 'drink'",
+                &[order_id]
+            ).await?;
+
+    if result.is_empty() {
+        Ok(vec![])
+    } else {
+        let mut sides = Vec::new();
+
+        for row in result {
+            sides.push(Side::from(row))
+        }
+
+        Ok(sides)
+    }
+}
+
+pub async fn get_burgers_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Burger>, CustomError> {
+    dbg!("running query", &order_id);
+    let result = db.query(
+        "select b.* from burgers as b join order_burgers as ob \
+        on b.code_name = ob.burger_id \
+        where ob.order_id = $1",
+        &[order_id]
+    ).await?;
+
+    dbg!("got the result", &result);
+
+    if result.len() == 0 {
+        Ok(vec![])
+    } else {
+        dbg!("trying to parse the burgers out now");
+        let mut burgers = Vec::new();
+        for row in result {
+            burgers.push(Burger::from(row));
+        }
+        Ok(burgers)
     }
 }
 

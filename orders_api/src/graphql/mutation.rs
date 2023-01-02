@@ -252,9 +252,10 @@ async fn create_order(
     // save the drinks out
     for drink in &drinks {
         let drink_id = drink.id.as_ref().expect("id should be provided").as_str();
+        let drink_size = drink.size.to_string().to_lowercase();
         let params: Vec<&(dyn ToSql + Sync)> = vec![
             &drink_id,
-            &drink.name,
+            &drink_size,
             &"drink",
             &order_id
         ];
@@ -275,7 +276,7 @@ async fn create_order(
             &order_id
         ];
         transaction.execute(
-            "INSERT INTO order_sides (side_id, side_size, side_type, side_type, order_id) VALUES ($1, $2, $3, $4)",
+            "INSERT INTO order_sides (side_id, side_size, side_type, order_id) VALUES ($1, $2, $3, $4)",
             &params[..]
         ).await?;
     }
@@ -291,11 +292,10 @@ async fn create_order(
     dbg!(&order);
 
     Ok(Order {
-        person: person.id.unwrap(),
         id: Some(order_id.to_string()),
         cost: Some(cost),
-        burgers: Some(burgers),
-        drinks: Some(drinks),
-        sides: Some(sides),
+        burgers: burgers,
+        drinks: drinks,
+        sides: sides,
     })
 }
