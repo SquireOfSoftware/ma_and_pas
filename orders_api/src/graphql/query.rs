@@ -132,10 +132,9 @@ impl QueryRoot {
 }
 
 pub async fn get_orders_from(person_id: Uuid, db: &Object) -> Result<Vec<Order>, CustomError> {
-    let result = db.query(
-        "SELECT * FROM orders WHERE person_id = $1",
-        &[&person_id]
-    ).await?;
+    let result = db
+        .query("SELECT * FROM orders WHERE person_id = $1", &[&person_id])
+        .await?;
 
     match result.len() {
         0 => Ok(Vec::new()),
@@ -150,7 +149,6 @@ pub async fn get_orders_from(person_id: Uuid, db: &Object) -> Result<Vec<Order>,
             Ok(orders)
         }
     }
-
 }
 
 pub async fn get_order(row: &Row, db: &Object) -> Result<Order, CustomError> {
@@ -171,14 +169,16 @@ pub async fn get_order(row: &Row, db: &Object) -> Result<Order, CustomError> {
 }
 
 async fn get_drinks_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Drink>, CustomError> {
-    let result = db.query(
-        "select s.* from sides as s join order_sides as os \
+    let result = db
+        .query(
+            "select s.* from sides as s join order_sides as os \
         ON s.code_name = os.side_id \
         AND s.size = os.side_size \
         AND s.type = os.side_type \
         WHERE os.order_id = $1 AND s.type = 'drink'",
-        &[order_id]
-    ).await?;
+            &[order_id],
+        )
+        .await?;
 
     if result.is_empty() {
         Ok(vec![])
@@ -194,14 +194,16 @@ async fn get_drinks_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Drink
 }
 
 async fn get_sides_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Side>, CustomError> {
-    let result = db.query(
-                "select s.* from sides as s join order_sides as os \
+    let result = db
+        .query(
+            "select s.* from sides as s join order_sides as os \
         ON s.code_name = os.side_id \
         AND s.size = os.side_size \
         AND s.type = os.side_type \
         WHERE os.order_id = $1 AND s.type != 'drink'",
-                &[order_id]
-            ).await?;
+            &[order_id],
+        )
+        .await?;
 
     if result.is_empty() {
         Ok(vec![])
@@ -216,14 +218,19 @@ async fn get_sides_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Side>,
     }
 }
 
-pub async fn get_burgers_from_order(order_id: &Uuid, db: &Object) -> Result<Vec<Burger>, CustomError> {
+pub async fn get_burgers_from_order(
+    order_id: &Uuid,
+    db: &Object,
+) -> Result<Vec<Burger>, CustomError> {
     dbg!("running query", &order_id);
-    let result = db.query(
-        "select b.* from burgers as b join order_burgers as ob \
+    let result = db
+        .query(
+            "select b.* from burgers as b join order_burgers as ob \
         on b.code_name = ob.burger_id \
         where ob.order_id = $1",
-        &[order_id]
-    ).await?;
+            &[order_id],
+        )
+        .await?;
 
     dbg!("got the result", &result);
 

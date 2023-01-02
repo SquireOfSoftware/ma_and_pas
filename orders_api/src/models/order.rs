@@ -1,4 +1,4 @@
-use crate::models::{Burger, Drink, Person, Side};
+use crate::models::{Burger, Drink, Side};
 use async_graphql::SimpleObject;
 use serde::Serialize;
 use tokio_postgres::Row;
@@ -14,10 +14,7 @@ pub struct Order {
 }
 
 impl Order {
-    pub fn build(row: &Row,
-             burgers: Vec<Burger>,
-             drinks: Vec<Drink>,
-             sides: Vec<Side>) -> Self {
+    pub fn build(row: &Row, burgers: Vec<Burger>, drinks: Vec<Drink>, sides: Vec<Side>) -> Self {
         Self {
             id: Some(row.get::<&str, Uuid>("id").to_string()),
             cost: Some(row.get::<&str, i32>("cost")),

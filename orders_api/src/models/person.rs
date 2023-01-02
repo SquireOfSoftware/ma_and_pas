@@ -1,9 +1,9 @@
+use crate::models::Order;
 use async_graphql::SimpleObject;
 use chrono::{DateTime, Local};
 use serde::Serialize;
 use tokio_postgres::Row;
 use uuid::Uuid;
-use crate::models::Order;
 
 #[derive(SimpleObject, Clone, Eq, PartialEq, Debug, Serialize)]
 pub struct Person {
@@ -11,7 +11,7 @@ pub struct Person {
     pub first_name: String,
     pub last_name: String,
     pub created_date: String,
-    pub orders: Vec<Order>
+    pub orders: Vec<Order>,
 }
 
 impl From<Row> for Person {
@@ -21,7 +21,7 @@ impl From<Row> for Person {
             first_name: row.get::<&str, &str>("first_name").to_string(),
             last_name: row.get::<&str, &str>("last_name").to_string(),
             created_date: row.get::<&str, DateTime<Local>>("created_date").to_string(),
-            orders: vec![]
+            orders: vec![],
         }
     }
 }
@@ -33,7 +33,7 @@ impl Person {
             first_name: row.get::<&str, &str>("first_name").to_string(),
             last_name: row.get::<&str, &str>("last_name").to_string(),
             created_date: row.get::<&str, DateTime<Local>>("created_date").to_string(),
-            orders
+            orders,
         }
     }
 }
