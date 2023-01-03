@@ -1,13 +1,13 @@
-use std::thread;
-use std::io::Write;
-use log::{LevelFilter, Record};
 use chrono::prelude::*;
+use log::{LevelFilter, Record};
+use std::io::Write;
+use std::thread;
 
 use env_logger::fmt::Formatter;
 use env_logger::Builder;
 
 pub fn setup_logger() {
-    let output_format = move | formatter: &mut Formatter, record: &Record | {
+    let output_format = move |formatter: &mut Formatter, record: &Record| {
         let thread_name = format!("(t: {})", thread::current().name().unwrap_or("unknown"));
         let local_time: DateTime<Local> = Local::now();
         let time_str = local_time.format("%H:%M:%S%.3f").to_string();
@@ -23,7 +23,8 @@ pub fn setup_logger() {
     };
 
     let mut builder = Builder::new();
-    builder.format(output_format)
+    builder
+        .format(output_format)
         .filter(None, LevelFilter::Info);
     // rust_log.map(|conf| builder.parse_filters(conf));
     builder.init();

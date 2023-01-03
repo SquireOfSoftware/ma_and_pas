@@ -20,3 +20,61 @@ To test the consumption and sourcing of events in RedPanda and what happens if y
 What I want to have:
 - a basic Nuxt JS framework to demonstrate to myself how Vue JS works
 - a basic test pipeline that runs tests per commit and generates a docker image when merged to main
+
+## Orders
+
+Looking at the menu:
+```
+query {
+    menu {
+        menuItem {
+            id
+            name
+        }
+    }
+}
+```
+
+The menu items can be a meal or a simple drink.
+
+You should know the name of the item that you are ordering.
+
+Customisations can come later.
+
+Creating the order:
+```
+mutation {
+    createOrder(input: OrderCreationInput!) {
+        orderNumber
+    }
+}
+
+input OrderCreationInput {
+    orders: [Int!]!
+}
+```
+
+You can create a list of orders, hence the array.
+
+And what you get back is an order number to track how your
+order is going.
+
+It should be noted that the client manages their "cart", the
+backend only handles successfully agreed upon orders.
+
+Bruh why is it so hard to find good async-graphql tutorials?
+Gonna try this one out
+https://levelup.gitconnected.com/working-with-graphql-in-rust-dcbff7e768f1
+
+Ran into a lot of actix and surreal db issues, so going to learn from
+this tutorial:
+https://medium.com/@ericmrodriguez7/surreal-db-with-actix-web-225b34f2d68d
+
+Another tutorial:
+https://www.youtube.com/watch?v=iOyvum0D3LM
+
+SurrealDB is a real pain in the butt so gonna switch to tokio postgres:
+https://github.com/actix/examples/tree/master/databases/postgres
+
+Can also use this for integration test notes for async graphql:
+https://konkle.us/async-graphql-with-rust-part-four/

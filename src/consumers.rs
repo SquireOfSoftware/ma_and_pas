@@ -42,7 +42,8 @@ async fn consume(server: &str, topic: &str) {
 
     let topics: [&str; 1] = [&topic];
 
-    consumer.subscribe(&topics)
+    consumer
+        .subscribe(&topics)
         .expect("Can't subscribe to topics");
 
     loop {
