@@ -78,3 +78,6 @@ https://github.com/actix/examples/tree/master/databases/postgres
 
 Can also use this for integration test notes for async graphql:
 https://konkle.us/async-graphql-with-rust-part-four/
+
+A guide to mocking (the author comes from the enterprise world, which is cool)
+https://danielbunte.medium.com/a-guide-to-testing-and-mocking-in-rust-a73d022b4075
