@@ -5,6 +5,7 @@ import ToolingIcon from './icons/IconTooling.vue'
 import EcosystemIcon from './icons/IconEcosystem.vue'
 import CommunityIcon from './icons/IconCommunity.vue'
 import SupportIcon from './icons/IconSupport.vue'
+import Menu from './Menu.vue'
 </script>
 
 <template>
@@ -26,6 +27,8 @@ import SupportIcon from './icons/IconSupport.vue'
     <template #heading>Ecosystem</template>
 
   </WelcomeItem>
+
+  <Menu />
 
   <WelcomeItem>
     <template #icon>

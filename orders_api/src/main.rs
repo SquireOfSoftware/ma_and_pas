@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::web::Data;
 use actix_web::{guard, web, App, HttpServer};
 use async_graphql::{EmptySubscription, Schema};
@@ -22,7 +23,12 @@ async fn main() -> std::io::Result<()> {
     // you must provision the data into the schema, it seems
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header();
         App::new()
+            .wrap(cors)
             .app_data(Data::new(schema.clone()))
             .service(web::resource("/").guard(guard::Post()).to(index))
             .service(web::resource("/").guard(guard::Get()).to(index_playground))

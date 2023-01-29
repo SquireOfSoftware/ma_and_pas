@@ -2,6 +2,21 @@
 
 This UI is my attempt at exploring vue JS
 
+The Orders API graphql endpoint is running under:
+```
+http://localhost:8001/
+```
+^ Take note that you post directly to it, to get `graphql` endpoints working.
+
+And the dummy test person id is:
+`7d62b784-f5a1-4fe5-8499-ad362595eca1`
+
+To get started just run:
+```
+npm install
+npm run dev
+```
+
 ## Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
