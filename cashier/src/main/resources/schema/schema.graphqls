@@ -1,0 +1,22 @@
+type Query {
+    burgers: [Burger!]
+    activeOrders: [Order!]
+}
+
+type Burger {
+    id: ID!
+    name: String!
+}
+
+input BurgerInput {
+    id: ID!
+}
+
+type Mutation {
+    createOrder(burgers: [BurgerInput!]): Order
+}
+
+type Order {
+    id: ID!
+    burgers: [Burger!]
+}
