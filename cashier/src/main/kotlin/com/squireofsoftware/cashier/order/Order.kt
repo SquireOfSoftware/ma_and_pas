@@ -1,7 +1,7 @@
 package com.squireofsoftware.cashier.order
 
 import jakarta.persistence.*
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "orders")

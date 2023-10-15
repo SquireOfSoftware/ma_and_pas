@@ -1,7 +1,7 @@
 package com.squireofsoftware.cashier.order
 
 import com.squireofsoftware.cashier.item.DishType
-import java.util.UUID
+import java.util.*
 
 data class FrontOrderItem(
     val id: UUID,

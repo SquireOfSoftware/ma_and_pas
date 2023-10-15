@@ -1,8 +1,7 @@
 package com.squireofsoftware.cashier.order
 
-import com.squireofsoftware.cashier.item.Item
 import jakarta.persistence.*
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "suborders")

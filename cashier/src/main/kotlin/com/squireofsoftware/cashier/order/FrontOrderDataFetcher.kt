@@ -1,11 +1,14 @@
 package com.squireofsoftware.cashier.order
 
 import com.netflix.graphql.dgs.*
+import com.squireofsoftware.cashier.event.KafkaService
 import com.squireofsoftware.cashier.item.InvalidItemException
 import com.squireofsoftware.cashier.item.ItemRepo
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 @DgsComponent
 class FrontOrderDataFetcher(
@@ -14,7 +17,9 @@ class FrontOrderDataFetcher(
     @Autowired
     val itemRepo: ItemRepo,
     @Autowired
-    val subOrderRepo: SubOrderRepo
+    val subOrderRepo: SubOrderRepo,
+    @Autowired
+    val kafkaService: KafkaService
 ) {
     private val finishStates = setOf(State.completed, State.failed)
     @DgsData(parentType = "Query", field = "activeOrders")
@@ -77,6 +82,8 @@ class FrontOrderDataFetcher(
             }
 
         subOrderRepo.saveAll(subOrders)
+
+        kafkaService.sendEvent(Json.encodeToString(String.Companion.serializer(), order.toFrontOrder().id.toString()))
 
         return order.toFrontOrder()
     }

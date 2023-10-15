@@ -19,3 +19,16 @@ A recipe is a combination of components
 - For now keep it simple, a collection of ids, some are marked as parallel others serial, for now assume all parallel
 
 Once working, look at getting some telemetry working
+
+Redpand notes:
+
+https://docs.redpanda.com/current/get-started/quick-start/?tab=tabs-1-single-broker
+
+The port that you want your producer client on is 19092.
+
+To test consumption:
+```
+docker exec -it redpanda-0 rpk topic consume test --num 1
+```
+
+I used this site for the Kotlin setup: https://medium.com/@abhikulshrestha22/kafka-producer-and-consumer-using-spring-boot-in-kotlin-100ce2a52fbd

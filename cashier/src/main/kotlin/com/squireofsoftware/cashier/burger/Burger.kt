@@ -1,7 +1,7 @@
 package com.squireofsoftware.cashier.burger
 
 import com.squireofsoftware.cashier.item.Item
-import java.util.UUID
+import java.util.*
 
 data class Burger(val id: UUID, val name: String, val displayName: String, val price: Int) {
     companion object {

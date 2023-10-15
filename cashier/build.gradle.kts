@@ -6,14 +6,11 @@ plugins {
 	kotlin("jvm") version "1.8.22"
 	kotlin("plugin.spring") version "1.8.22"
 	kotlin("plugin.jpa") version "1.9.10"
+	kotlin("plugin.serialization") version "1.9.0"
 }
 
 group = "com.squireofsoftware"
 version = "0.0.1-SNAPSHOT"
-
-//noArg {
-//	annotation("com.squireofsoftware.cashier.item.Item")
-//}
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_17
@@ -31,6 +28,8 @@ dependencies {
 	implementation("com.h2database:h2:2.2.224")
 	implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
 	implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
+	implementation("org.springframework.kafka:spring-kafka:3.0.11")
+	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
 
 tasks.withType<KotlinCompile> {
