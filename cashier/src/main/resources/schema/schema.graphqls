@@ -8,15 +8,36 @@ type Burger {
     name: String!
 }
 
-input BurgerInput {
-    id: ID!
+input Request {
+    items: [String]
 }
 
 type Mutation {
-    createOrder(burgers: [BurgerInput!]): Order
+    createOrder(request: Request): Order
 }
 
 type Order {
     id: ID!
-    burgers: [Burger!]
+    subOrders: [SubOrder!]
+}
+
+type SubOrder {
+    id: ID!
+    name: String!
+    dishType: String!
+    createdAt: String!
+    state: State!
+}
+
+type Item {
+    id: ID!
+    name: String!
+    dishType: String!
+}
+
+enum State {
+    requested,
+    cooking,
+    completed,
+    failed
 }

@@ -2,16 +2,19 @@ package com.squireofsoftware.cashier.burger
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
-import java.util.UUID
+import com.squireofsoftware.cashier.item.ItemRepo
+import com.squireofsoftware.cashier.item.DishType
+import org.springframework.beans.factory.annotation.Autowired
 
 @DgsComponent
-class BurgerDataFetcher {
-    private val burgers = listOf(
-        Burger(UUID.randomUUID(), "cheese"),
-        Burger(UUID.randomUUID(), "chicken"))
-
+class BurgerDataFetcher(
+    @Autowired
+    val itemRepo: ItemRepo
+) {
     @DgsQuery
     fun burgers(): List<Burger> {
-        return burgers
+        return itemRepo.findAllByDishType(DishType.burger).map {
+            Burger.toBurger(it)
+        }
     }
 }
