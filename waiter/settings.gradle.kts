@@ -1,3 +1,3 @@
 
-rootProject.name="recipe"
+rootProject.name="waiter"
 
