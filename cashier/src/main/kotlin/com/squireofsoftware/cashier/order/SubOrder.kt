@@ -18,5 +18,5 @@ data class SubOrder(
     @Column
     val lastUpdated: Long,
     @Enumerated(EnumType.STRING)
-    val state: State = State.requested,
+    var state: State = State.requested,
 )

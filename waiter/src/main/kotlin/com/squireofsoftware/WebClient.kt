@@ -10,7 +10,7 @@ import java.util.*
 @Client(id = "acknowledgements")
 @Singleton
 interface WebClient {
-    @Put("/orders/{orderId}")
+    @Put("/subOrders/{subOrderId}")
     @SingleResult
-    fun sendAcknowledgement(orderId: UUID): Publisher<Void>
+    fun sendAcknowledgement(subOrderId: UUID): Publisher<Void>
 }

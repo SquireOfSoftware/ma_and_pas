@@ -9,6 +9,7 @@ use rdkafka::error::KafkaResult;
 use rdkafka::Message;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::TopicPartitionList;
+use rnglib::{Language, RNG};
 
 mod logging;
 
@@ -68,10 +69,10 @@ async fn cooking_loop(server: &str, consumption_queue: &str, acknowledgement_que
                 };
                 info!("key: '{:?}', payload: '{}', topic: '{}', partition: '{}', offset: '{}', timestamp: '{:?}'",
                     m.key(), payload, m.topic(), m.partition(), m.offset(), m.timestamp());
-                info!("Received order: {}", payload);
+                info!("Received sub order: {}", payload);
                 consumer.commit_message(&m, CommitMode::Async).unwrap();
 
-                info!("Cooking the order now...");
+                info!("Cooking the sub order now...");
                 let ten_millis = time::Duration::from_millis(10);
 
                 thread::sleep(ten_millis);
@@ -102,9 +103,13 @@ async fn complete_order(producer: &FutureProducer, queue: &str, order_id: &str) 
 #[tokio::main]
 async fn main() {
     logging::setup_logger();
-    info!("Hello world");
+    let rng = RNG::try_from(&Language::Fantasy).unwrap();
+
+    let first_name = rng.generate_name();
+
+    info!("{}", format!("This is chef: {} at your service", first_name));
     let kafka = "localhost:19092";
-    let consumption_queue = "incoming_orders";
+    let consumption_queue = "incoming_sub_orders";
     let acknowledgement_queue = "acknowledgements";
     cooking_loop(kafka, consumption_queue, acknowledgement_queue).await;
 }

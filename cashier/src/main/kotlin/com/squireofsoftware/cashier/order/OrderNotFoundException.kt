@@ -1,4 +1,4 @@
-package com.squireofsoftware.cashier.acknowledgements
+package com.squireofsoftware.cashier.order
 
 import java.util.*
 

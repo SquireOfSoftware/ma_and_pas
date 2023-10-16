@@ -15,10 +15,10 @@ class Acknowledgements(
 ){
     @Topic("acknowledgements")
     fun receive(@KafkaKey key: String?, payload: String?): Publisher<Void> {
-        LOG.info("Got Order - {} by {}", payload, key)
-        val orderId = UUID.fromString(payload!!.replace("\"", ""))
-        LOG.info("Acknowledging $orderId...")
-        return webClient.sendAcknowledgement(orderId)
+        LOG.info("Got Sub Order - {} by {}", payload, key)
+        val subOrderId = UUID.fromString(payload!!.replace("\"", ""))
+        LOG.info("Acknowledging $subOrderId...")
+        return webClient.sendAcknowledgement(subOrderId)
     }
 
     companion object {

@@ -10,15 +10,15 @@ import org.springframework.kafka.config.TopicBuilder
 @Configuration
 class KafkaConfig(
     @Value(value = "\${topic.name}")
-    val topicName: String
+    val subOrderTopicName: String
 ) {
     @Bean
     fun topicCreate(): NewTopic {
-        return TopicBuilder.name(topicName).build()
+        return TopicBuilder.name(subOrderTopicName).build()
     }
 
     @Bean
-    fun topicName(): String {
-        return topicName
+    fun subOrderTopicName(): String {
+        return subOrderTopicName
     }
 }
