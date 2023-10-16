@@ -1,12 +1,7 @@
 package com.squireofsoftware.cashier.order
 
 import com.netflix.graphql.dgs.*
-import com.squireofsoftware.cashier.event.KafkaService
-import com.squireofsoftware.cashier.item.InvalidItemException
 import com.squireofsoftware.cashier.item.ItemRepo
-import com.squireofsoftware.cashier.order.OrderService.Companion.finishStates
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -14,23 +9,19 @@ import java.util.*
 @DgsComponent
 class FrontOrderDataFetcher(
     @Autowired
-    val orderRepo: OrderRepo,
-    @Autowired
     val itemRepo: ItemRepo,
     @Autowired
-    val subOrderRepo: SubOrderRepo,
-    @Autowired
-    val kafkaService: KafkaService
+    val orderService: OrderService
 ) {
     @DgsQuery
     fun activeOrders(): List<FrontOrder> {
-        return orderRepo.findAllByStateIsNotInOrderByLastUpdatedDesc(finishStates)
+        return orderService.getActiveOrders()
             .map { it.toFrontOrder() }
     }
 
     @DgsQuery
     fun completedOrders(): List<FrontOrder> {
-        return orderRepo.findAllByStateInOrderByLastUpdatedDesc(finishStates)
+        return orderService.getCompletedOrders()
             .map { it.toFrontOrder() }
     }
 
@@ -38,7 +29,7 @@ class FrontOrderDataFetcher(
     fun activeOrderItems(dataFetchingEnvironment: DgsDataFetchingEnvironment): List<FrontOrderItem> {
         val order = dataFetchingEnvironment.getSource<FrontOrder>()
 
-        val subOrders = subOrderRepo.findAllByOrderId(orderId = order.id)
+        val subOrders = orderService.findSubOrders(order.id)
 
         val items = itemRepo.findAllByIdIn(subOrders.map { it.itemId }).associateBy { it.id }
 
@@ -57,42 +48,10 @@ class FrontOrderDataFetcher(
     @Transactional
     @DgsMutation
     fun createOrder(@InputArgument request: Request): FrontOrder {
-        val currentTime = System.currentTimeMillis()
-        val requestedItems = itemRepo.findAllByIdIn(request.items.map{ UUID.fromString(it) })
-
-        if (requestedItems.isEmpty()) {
-            throw InvalidItemException(request.items)
-        }
-
-        val totalPrice = requestedItems.sumOf {
-            it.price
-        }
-
-        val order = orderRepo.save(Order(
-            id = UUID.fromString(request.id),
-            createdAt = currentTime,
-            lastUpdated = currentTime,
-            price = totalPrice
-        ))
-
-        val subOrders =
-            requestedItems.map {
-                SubOrder(
-                    id = UUID.randomUUID(),
-                    itemId = it.id,
-                    createdAt = currentTime,
-                    lastUpdated = currentTime,
-                    state = State.requested,
-                    orderId = order.id
-                )
-            }
-
-        subOrderRepo.saveAll(subOrders)
-
-        subOrders.forEach {
-            kafkaService.sendEvent(Json.encodeToString(String.Companion.serializer(), it.id.toString()))
-        }
-
-        return order.toFrontOrder()
+        return orderService.createOrder(
+            UUID.fromString(request.id),
+            request.items.map{ UUID.fromString(it) }
+        )
+            .toFrontOrder()
     }
 }

@@ -1,6 +1,10 @@
 package com.squireofsoftware.cashier.order
 
-import org.apache.juli.logging.Log
+import com.squireofsoftware.cashier.event.KafkaService
+import com.squireofsoftware.cashier.item.InvalidItemsException
+import com.squireofsoftware.cashier.item.ItemRepo
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,13 +18,17 @@ class OrderService(
     @Autowired
     val orderRepo: OrderRepo,
     @Autowired
-    val subOrderRepo: SubOrderRepo
+    val subOrderRepo: SubOrderRepo,
+    @Autowired
+    val itemRepo: ItemRepo,
+    @Autowired
+    val kafkaService: KafkaService
 ) {
     companion object {
         val finishStates = setOf(State.completed, State.failed)
     }
 
-    private val LOGGER: Logger = LoggerFactory.getLogger(this::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     @Transactional
     fun completeSubOrder(@PathVariable subOrderId: UUID): SubOrder {
@@ -30,7 +38,7 @@ class OrderService(
         }
         val actualOrder = subOrder.get()
         actualOrder.state = State.completed
-        LOGGER.info("Completing the suborder $subOrderId")
+        logger.info("Completing the suborder $subOrderId")
         return subOrderRepo.save(actualOrder)
     }
 
@@ -46,19 +54,19 @@ class OrderService(
                 }) {
                 order.state = State.completed
                 orderRepo.save(order)
-                LOGGER.info("Order ${order.id} is done")
+                logger.info("Order ${order.id} is done")
             } else if (subOrderStates.any {
                     it == State.failed
                 }) {
                 order.state = State.failed
                 orderRepo.save(order)
-                LOGGER.info("Order ${order.id} is marked as failed")
+                logger.info("Order ${order.id} is marked as failed")
             } else {
-                LOGGER.info("Order ${subOrder.orderId} is still going")
+                logger.info("Order ${subOrder.orderId} is still going")
                 // we could spawn a timer here to check for race conditions
             }
         } else {
-            LOGGER.info("Order ${order.id} was already marked as ${order.state}")
+            logger.info("Order ${order.id} was already marked as ${order.state}")
         }
     }
 
@@ -66,5 +74,57 @@ class OrderService(
         val order = orderRepo.findById(orderId)
         if (order.isEmpty) throw OrderNotFoundException(orderId = orderId)
         return order.get()
+    }
+
+    fun createOrder(orderId: UUID, subOrderIds: List<UUID>): Order {
+        val currentTime = System.currentTimeMillis()
+        val requestedItems = itemRepo.findAllByIdIn(subOrderIds)
+
+        if (requestedItems.isEmpty()) {
+            throw InvalidItemsException(subOrderIds)
+        }
+
+        val totalPrice = requestedItems.sumOf {
+            it.price
+        }
+
+        val order = orderRepo.save(Order(
+            id = orderId,
+            createdAt = currentTime,
+            lastUpdated = currentTime,
+            price = totalPrice
+        ))
+
+        val subOrders =
+            requestedItems.map {
+                SubOrder(
+                    id = UUID.randomUUID(),
+                    itemId = it.id,
+                    createdAt = currentTime,
+                    lastUpdated = currentTime,
+                    state = State.requested,
+                    orderId = order.id
+                )
+            }
+
+        subOrderRepo.saveAll(subOrders)
+
+        subOrders.forEach {
+            kafkaService.sendEvent(Json.encodeToString(String.Companion.serializer(), it.id.toString()))
+        }
+
+        return order
+    }
+
+    fun findSubOrders(orderId: UUID): List<SubOrder> {
+        return subOrderRepo.findAllByOrderId(orderId = orderId)
+    }
+
+    fun getActiveOrders(): List<Order> {
+        return orderRepo.findAllByStateIsNotInOrderByLastUpdatedDesc(finishStates)
+    }
+
+    fun getCompletedOrders(): List<Order> {
+        return orderRepo.findAllByStateInOrderByLastUpdatedDesc(finishStates)
     }
 }
