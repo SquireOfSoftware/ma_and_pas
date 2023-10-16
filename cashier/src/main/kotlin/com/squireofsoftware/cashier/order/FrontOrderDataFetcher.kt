@@ -22,9 +22,15 @@ class FrontOrderDataFetcher(
     val kafkaService: KafkaService
 ) {
     private val finishStates = setOf(State.completed, State.failed)
-    @DgsData(parentType = "Query", field = "activeOrders")
+    @DgsQuery
     fun activeOrders(): List<FrontOrder> {
         return orderRepo.findAllByStateIsNotInOrderByLastUpdatedDesc(finishStates)
+            .map { it.toFrontOrder() }
+    }
+
+    @DgsQuery
+    fun completedOrders(): List<FrontOrder> {
+        return orderRepo.findAllByStateInOrderByLastUpdatedDesc(finishStates)
             .map { it.toFrontOrder() }
     }
 

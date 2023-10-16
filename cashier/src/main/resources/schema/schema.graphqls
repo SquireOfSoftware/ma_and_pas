@@ -1,6 +1,7 @@
 type Query {
     burgers: [Burger!]
     activeOrders: [Order!]
+    completedOrders: [Order!]
 }
 
 type Burger {
@@ -19,6 +20,7 @@ type Mutation {
 type Order {
     id: ID!
     subOrders: [SubOrder!]
+    state: State!
 }
 
 type SubOrder {

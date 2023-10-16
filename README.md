@@ -2,10 +2,8 @@ This is just an experiment to play with RedPanda, Nuxt (and a bit of partyjs?), 
 
 The goal here is to wire up some sort of fish and chip shop that can take orders of passer-bys and serve them up.
 
-Recipe Service
-- Defines how to make a burger, fries and a drink
-    - This includes how long to wait
-- How much it would cost for now
+Waiter Service
+- This is just picking up the acknowledgements from the chef service and reports back the meal
 
 Chef Service
 - Does the actual cooking work

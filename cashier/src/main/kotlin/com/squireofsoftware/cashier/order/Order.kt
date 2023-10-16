@@ -14,7 +14,7 @@ data class Order(
     @Column
     val lastUpdated: Long,
     @Enumerated(EnumType.STRING)
-    val state: State = State.requested,
+    var state: State = State.requested,
     @Column
     val price: Int,
 ) {
