@@ -1,5 +1,6 @@
 package com.squireofsoftware.cashier.order
 
+import org.apache.juli.logging.Log
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,25 +36,29 @@ class OrderService(
 
     @Transactional
     fun checkIfOrderIsComplete(subOrder: SubOrder) {
-        val subOrders = subOrderRepo.findAllByOrderId(subOrder.orderId)
-        val subOrderStates = subOrders.map { it.state }
-        if (subOrderStates.all {
-            it == State.completed
-        }) {
-            val order = getOrder(subOrder.orderId)
-            order.state = State.completed
-            orderRepo.save(order)
-            LOGGER.info("Order ${order.id} is done")
-        }
-        else if (subOrderStates.any {
-            it == State.failed
-        }) {
-            val order = getOrder(subOrder.orderId)
-            order.state = State.failed
-            orderRepo.save(order)
-            LOGGER.info("Order ${order.id} is marked as failed")
+        // check if it is already done
+        val order = getOrder(subOrder.orderId)
+        if (order.state != State.completed && order.state != State.failed) {
+            val subOrders = subOrderRepo.findAllByOrderId(subOrder.orderId)
+            val subOrderStates = subOrders.map { it.state }
+            if (subOrderStates.all {
+                    it == State.completed
+                }) {
+                order.state = State.completed
+                orderRepo.save(order)
+                LOGGER.info("Order ${order.id} is done")
+            } else if (subOrderStates.any {
+                    it == State.failed
+                }) {
+                order.state = State.failed
+                orderRepo.save(order)
+                LOGGER.info("Order ${order.id} is marked as failed")
+            } else {
+                LOGGER.info("Order ${subOrder.orderId} is still going")
+                // we could spawn a timer here to check for race conditions
+            }
         } else {
-            LOGGER.info("Order ${subOrder.orderId} is still going")
+            LOGGER.info("Order ${order.id} was already marked as ${order.state}")
         }
     }
 
