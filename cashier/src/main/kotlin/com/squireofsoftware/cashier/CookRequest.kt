@@ -7,8 +7,9 @@ import java.util.*
 @Serializable
 class CookRequest(
     @Serializable(with = UUIDSerializer::class)
-    val orderId: UUID,
+    val subOrderId: UUID,
     val dishType: DishType,
     val dishName: String,
-    val timeInMillis: Long,
+    @Serializable(with = UUIDSerializer::class)
+    val orderId: UUID
 )

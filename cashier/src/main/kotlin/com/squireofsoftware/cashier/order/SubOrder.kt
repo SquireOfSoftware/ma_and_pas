@@ -1,5 +1,7 @@
 package com.squireofsoftware.cashier.order
 
+import com.squireofsoftware.cashier.CookRequest
+import com.squireofsoftware.cashier.item.Item
 import jakarta.persistence.*
 import java.util.*
 
@@ -19,4 +21,13 @@ data class SubOrder(
     val lastUpdated: Long,
     @Enumerated(EnumType.STRING)
     var state: State = State.requested,
-)
+) {
+    fun toCookRequest(item: Item): CookRequest {
+        return CookRequest(
+            subOrderId = id,
+            orderId = orderId,
+            dishType = item.dishType,
+            dishName = item.name
+        )
+    }
+}

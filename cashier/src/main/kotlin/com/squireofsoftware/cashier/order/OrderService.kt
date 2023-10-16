@@ -1,5 +1,6 @@
 package com.squireofsoftware.cashier.order
 
+import com.squireofsoftware.cashier.CookRequest
 import com.squireofsoftware.cashier.event.KafkaService
 import com.squireofsoftware.cashier.item.InvalidItemsException
 import com.squireofsoftware.cashier.item.ItemRepo
@@ -95,6 +96,8 @@ class OrderService(
             price = totalPrice
         ))
 
+        val itemMap = requestedItems.associateBy { it.id }
+
         val subOrders =
             requestedItems.map {
                 SubOrder(
@@ -110,7 +113,10 @@ class OrderService(
         subOrderRepo.saveAll(subOrders)
 
         subOrders.forEach {
-            kafkaService.sendEvent(Json.encodeToString(String.Companion.serializer(), it.id.toString()))
+            val cookRequest = it.toCookRequest(itemMap[it.itemId]!!)
+            val serialisedRequest = Json.encodeToString(CookRequest.serializer(), cookRequest)
+            logger.info(serialisedRequest)
+            kafkaService.sendEvent(serialisedRequest)
         }
 
         return order

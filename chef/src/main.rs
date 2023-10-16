@@ -1,6 +1,6 @@
 use std::{thread, time};
 use std::time::Duration;
-use log::{info, warn};
+use log::{error, info, warn};
 use rdkafka::client::ClientContext;
 use rdkafka::config::{ClientConfig, RDKafkaLogLevel};
 use rdkafka::consumer::stream_consumer::StreamConsumer;
@@ -10,6 +10,7 @@ use rdkafka::Message;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::TopicPartitionList;
 use rnglib::{Language, RNG};
+use serde::Deserialize;
 
 mod logging;
 
@@ -32,6 +33,30 @@ impl ConsumerContext for CustomContext {
 }
 
 type LoggingConsumer = StreamConsumer<CustomContext>;
+
+#[derive(Deserialize, Debug)]
+enum DishType {
+    burger,
+    fries,
+    drink
+}
+
+fn get_cook_time_in_millis(dish_type: DishType) -> u64 {
+    match dish_type {
+        DishType::burger => 54, // 9 mins - but shorted to 54 millis
+        DishType::fries => 30, // 5 mins - but shorted to 30 millis
+        DishType::drink => 18, // 3 mins - but shorted to 18 millis
+    }
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(deny_unknown_fields, rename(deserialize = "camelCase"))]
+struct CookRequest {
+    subOrderId: String,
+    dishType: DishType,
+    dishName: String,
+    orderId: String,
+}
 
 async fn cooking_loop(server: &str, consumption_queue: &str, acknowledgement_queue: &str) {
     let context = CustomContext;
@@ -67,15 +92,20 @@ async fn cooking_loop(server: &str, consumption_queue: &str, acknowledgement_que
                         ""
                     }
                 };
-                info!("key: '{:?}', payload: '{}', topic: '{}', partition: '{}', offset: '{}', timestamp: '{:?}'",
-                    m.key(), payload, m.topic(), m.partition(), m.offset(), m.timestamp());
-                info!("Received sub order: {}", payload);
-                consumer.commit_message(&m, CommitMode::Async).unwrap();
+                info!("Tryna read {}", payload);
+                let cook_request: CookRequest = serde_json::from_str(payload).expect("Test");
+
+                info!("key: '{:?}', cook_request: '{:?}', topic: '{}', partition: '{}', offset: '{}', timestamp: '{:?}'",
+                    m.key(), cook_request, m.topic(), m.partition(), m.offset(), m.timestamp());
+                info!("Received sub order: {:?}", cook_request);
+                // consumer.commit_message(&m, CommitMode::Async).unwrap();
 
                 info!("Cooking the sub order now...");
-                let ten_millis = time::Duration::from_millis(10);
+                // need to parse the json that is sent down
+                // need to emit a cooking event
+                let cook_time = get_cook_time_in_millis(cook_request.dishType);
 
-                thread::sleep(ten_millis);
+                thread::sleep(Duration::from_millis(cook_time));
 
                 info!("{} is finished, sending the acknowledgement!", payload);
 

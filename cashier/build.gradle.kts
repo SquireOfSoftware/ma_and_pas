@@ -31,6 +31,14 @@ dependencies {
 	implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
 	implementation("org.springframework.kafka:spring-kafka:3.0.11")
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+	implementation("org.springframework.cloud:spring-cloud-starter-sleuth") {
+		exclude("spring-cloud-sleuth-brave")
+	}
+	implementation("org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure")
+	implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+	implementation(platform("org.springframework.cloud:spring-cloud-dependencies:2021.0.5"))
+	implementation(platform("org.springframework.cloud:spring-cloud-sleuth-otel-dependencies:1.1.2"))
+
 }
 
 tasks.withType<KotlinCompile> {

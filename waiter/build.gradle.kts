@@ -29,6 +29,7 @@ dependencies {
     implementation("io.micronaut.tracing:micronaut-tracing-opentelemetry-kafka")
     implementation("io.micronaut.kafka:micronaut-kafka")
     implementation("io.micronaut:micronaut-http-client")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
 
 

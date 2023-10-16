@@ -18,7 +18,7 @@ A recipe is a combination of components
 
 Once working, look at getting some telemetry working
 
-Redpand notes:
+Redpanda notes:
 
 https://docs.redpanda.com/current/get-started/quick-start/?tab=tabs-1-single-broker
 
@@ -30,3 +30,6 @@ docker exec -it redpanda-0 rpk topic consume test --num 1
 ```
 
 I used this site for the Kotlin setup: https://medium.com/@abhikulshrestha22/kafka-producer-and-consumer-using-spring-boot-in-kotlin-100ce2a52fbd
+
+OTel notes:
+https://www.baeldung.com/spring-boot-opentelemetry-setup
