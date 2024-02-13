@@ -38,6 +38,8 @@ dependencies {
 	implementation("io.opentelemetry:opentelemetry-exporter-otlp")
 	implementation(platform("org.springframework.cloud:spring-cloud-dependencies:2021.0.5"))
 	implementation(platform("org.springframework.cloud:spring-cloud-sleuth-otel-dependencies:1.1.2"))
+	testImplementation("io.mockk:mockk:1.13.9")
+	testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 
 }
 
