@@ -1,10 +1,14 @@
-version: "3.7"
 name: redpanda-quickstart
 networks:
   redpanda_network:
     driver: bridge
 volumes:
   redpanda-0: null
+  grafanadata:
+  prometheusdata:
+  lokidata:
+  tempodata:
+
 services:
   redpanda-0:
     command:
@@ -38,11 +42,15 @@ services:
       - redpanda-0:/var/lib/redpanda/data
     networks:
       - redpanda_network
+    expose:
+      - 9644
     ports:
       - 18081:18081
       - 18082:18082
       - 19092:19092
       - 19644:9644
+    depends_on:
+      - prometheus
   console:
     container_name: redpanda-console
     image: docker.redpanda.com/redpandadata/console:v2.3.1
@@ -66,3 +74,76 @@ services:
       - 8080:8080
     depends_on:
       - redpanda-0
+
+  # was partially following this guide here: https://evoila.com/blog/building-open-source-observability-stack-opentelemetry/
+  # if having troubles we can take a look at this: https://dev.to/akinfiyinfoluwa/using-redpanda-with-opentelemetry-and-grafana-for-real-time-event-monitoring-li6
+  collector:
+    container_name: collector
+    image: otel/opentelemetry-collector-contrib:latest
+    networks:
+      - redpanda_network
+    volumes:
+      - ./otel_config/otel-collector.yml:/etc/otelcol-contrib/otel-collector.yml
+    command:
+      - --config=/etc/otelcol-contrib/otel-collector.yml
+    restart: no
+    ports:
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    networks:
+      - redpanda_network
+    volumes:
+      - ./otel_config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./otel_data/prometheusdata:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --web.enable-otlp-receiver
+      - --enable-feature=exemplar-storage
+      - --storage.tsdb.retention.time=15d
+    restart: no
+    ports:
+      - '9090:9090'
+    depends_on:
+      - collector
+
+  loki:
+    container_name: loki
+    restart: no
+    image: grafana/loki:latest
+    networks:
+      - redpanda_network
+    volumes:
+      - ./otel_data/lokidata:/loki
+    ports:
+      - "3100:3100"
+    depends_on:
+      - collector
+
+  tempo:
+    container_name: tempo
+    restart: no
+    image: grafana/tempo:latest
+    volumes:
+      - ./otel_config/tempo.yml:/etc/tempo.yml
+      - ./otel_data/tempodata:/var/tempo
+    command:
+      - -config.file=/etc/tempo.yml
+    ports:
+      - "3200:3200"  # tempo
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    networks:
+      - redpanda_network
+    restart: no
+    volumes:
+      - ./otel_config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./otel_data/grafanadata:/var/lib/grafana
+    ports:
+      - "3000:3000"
