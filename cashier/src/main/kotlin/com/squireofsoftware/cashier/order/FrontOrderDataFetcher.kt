@@ -27,7 +27,7 @@ class FrontOrderDataFetcher(
 
     @DgsData(parentType = "Order", field = "subOrders")
     fun activeOrderItems(dataFetchingEnvironment: DgsDataFetchingEnvironment): List<FrontOrderItem> {
-        val order = dataFetchingEnvironment.getSource<FrontOrder>()
+        val order = dataFetchingEnvironment.getSource<FrontOrder>()!!
 
         val subOrders = orderService.findSubOrders(order.id)
 

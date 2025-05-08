@@ -1,0 +1,66 @@
+server:
+  port: 8000
+
+spring:
+  sql:
+    init:
+      mode: always
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:cashier
+    driverClassName: org.h2.Driver
+    username: admin
+    password: password
+  kafka:
+    bootstrap-servers: localhost:19092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: incomingOrders
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+logging:
+  level:
+    org.springframework.boot.actuate.endpoint.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+
+topic:
+  name: incoming_sub_orders
+
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    jmx:
+      exposure:
+        include: "health,info,beans,env"
+    health:
+      show-details: true
+  endpoint:
+    health:
+      enabled: true
+  otlp:
+    metrics:
+      export:
+        # Supported configs
+        url: "http://localhost:4318/v1/metrics"
+        batchSize: 15000
+        aggregationTemporality: "cumulative"
+        headers:
+          header1: value1
+        step: 30s
+        resourceAttributes:
+          key1: value1
