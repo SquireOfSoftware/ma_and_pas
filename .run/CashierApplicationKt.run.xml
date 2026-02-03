@@ -3,6 +3,7 @@
     <option name="MAIN_CLASS_NAME" value="com.squireofsoftware.cashier.CashierApplicationKt" />
     <module name="cashier.main" />
     <shortenClasspath name="NONE" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/cashier" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

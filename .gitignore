@@ -3,3 +3,5 @@ target/
 *.lock
 .gradle/
 build/
+
+otel_data/
